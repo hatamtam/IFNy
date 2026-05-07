@@ -1,0 +1,44 @@
+---
+title: "IFNy_Metadata"
+author: "Renee Matthews"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r setup, include=FALSE}
+#this chuck is to setup defaults for basic settings of the webpage, note that this chunk is R language and the chunk below is CSS language
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	dev = c("png","pdf")
+)
+```
+
+the chunk of code below formats the code on the webpage
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+}
+```
+
+
+```{r}
+
+# this command creates an object (remove hashtag to make the function below operational)
+# my_data <- data.frame(x = 1:5, y = letters[1:5])
+
+# this commands write file into the disk drive (remove hashtag to make the function below operational)
+# saveRDS(metadata, "data/metadata_IFNy.RDS")
+# saveRDS(counts, "data/counts_IFNy.RDS")
+
+# these commands load the files above into a different name (the object name)
+metadata <- readRDS("data/metadata_IFNy.RDS")
+counts <- readRDS("data/counts_IFNy.RDS")
+```
+
+
