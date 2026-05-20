@@ -1,6 +1,6 @@
 ---
 title: "IFNy_Metadata"
-author: "Renee Matthews"
+author: "Harsha Tamtam"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -26,6 +26,16 @@ pre[class] {
 }
 ```
 
+Library Section
+```{r Libraries}
+library(tidyverse)
+library(dplyr)
+library(tibble)
+library(scales)
+library(edgeR)
+```
+
+
 
 ```{r}
 
@@ -41,4 +51,296 @@ metadata <- readRDS("data/metadata_IFNy.RDS")
 counts <- readRDS("data/counts_IFNy.RDS")
 ```
 
+### Viewing Data
+
+
+```{r}
+head(metadata)
+```
+
+```{r}
+head(counts)
+```
+
+```{r}
+metadata$Condition
+length(metadata$Condition) ### number of rows
+str(metadata)  
+
+dim(metadata)
+mean(metadata$Mapped_Reads)
+metadata %>% 
+  summary()
+```
+```{r Averaged mapped reads by Species, column plot}
+metadata %>% 
+  group_by(Species) %>% 
+  summarise(avgMapped_Reads=mean(Mapped_Reads))
+
+savetest <- metadata %>% 
+  group_by(Species) %>% 
+  summarise(avgMapped_Reads=mean(Mapped_Reads))
+ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
+  geom_col(aes(fill=Species))+
+  geom_point()+
+  labs(title = "average mapped reads",y="mean counts" )+
+  theme_bw()
+  
+  
+```
+
+```{r Averaged mapped reads by Individual in Species, box plot}
+
+# savetest <- metadata %>% 
+#   group_by(Species) %>% 
+#   summarise(avgMapped_Reads=mean(Mapped_Reads))
+# ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
+#   geom_boxplot(aes(fill=Species))+
+#   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads, shape = Species))+
+#   # scale_color_discrete(values = c("black"))+
+#   labs(title = "average mapped reads",y="mean counts" )
+  
+ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
+  geom_boxplot(aes(fill=Species))+
+  geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
+  labs(title = "Average Mapped RNA_Sequencing Reads between Species",y="Mean Counts")
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+# ggsave("Average_Mapped_Reads.png")
+# ggsave("Average_Mapped_Reads.png", width = 6, height = 4, dpi = 300)
+
+```
+
+
+```{r Averaged mapped reads by Species, box plot}
+
+savetest <- metadata %>% 
+  group_by(Species) %>% 
+  summarise(avgMapped_Reads=mean(Mapped_Reads))
+
+ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
+  geom_boxplot(aes(fill=Species))+
+  geom_dotplot(binaxis = "y", stackdir = "centerwhole", dotsize = 0.5, alpha = 0.7)+
+  labs(title = "Average Mapped Reads across Species",y = "Average Counts" )+
+  theme_bw()
+  
+```  
+
+
+
+```{r Mapped read counts between treatment conditions}
+ggplot(metadata, aes(x=Condition,y=Mapped_Reads))+
+  geom_col(aes(fill=Species))+
+  geom_point()+
+  labs(title = "mapped reads",y="counts" )+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+   
+```
+```{r Average mapped read counts between each individual, column plot}
+
+metadata %>% 
+  group_by(Individual) %>% 
+  summarise(avgMapped_Reads=mean(Mapped_Reads)) %>% 
+ggplot(., aes(x=Individual, y=avgMapped_Reads))+
+  geom_col(aes(fill=Individual))+
+  geom_point()+
+  labs(title = "Mapped RNA_Sequencing reads between individuals",y="Mapped read count", x="Individual" )+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+ggsave("Individual_Mapped_Reads.png")
+ggsave("Indiviual_Mapped_Reads.png", width = 6, height = 4, dpi = 300)
+```
+
+```{r Average mapped read counts between each individual, box plot}
+
+metadata %>% 
+  group_by(Individual) %>% 
+  summarise(avgMapped_Reads=mean(Mapped_Reads)) %>% 
+ggplot(., aes(x=Individual,y=avgMapped_Reads))+
+  geom_boxplot(aes(fill=Individual))+
+  geom_point()+
+  labs(title = "Mapped reads between individuals",y="Mapped read count", x="Individual" )+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+metadata %>% 
+  group_by(Species) %>% 
+  summarise(avgMapped_Reads=mean(Mapped_Reads)) %>%
+ggplot(., aes(x=Species,y=avgMapped_Reads))+
+  geom_boxplot(aes(fill=Species))+
+  geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
+  labs(title = "Average Mapped Reads",y="Mean counts" )
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+ggsave("Average_Mapped_Reads.png")
+ggsave("Average_Mapped_Reads.png", width = 6, height = 4, dpi = 300)
+```
+```{r Making Boxplot showing distributions of gene counts}
+
+Ensembl_ID_rownames <- counts %>%
+  column_to_rownames(var = "Ensemble") %>% 
+  select(-c(Entrez_ID, Symbol))
+
+Ensembl_ID_rownames %>% 
+  rownames_to_column("genes") %>% 
+  pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
+  mutate(count_distributions = as.numeric(count_distributions)) %>% 
+   
+ggplot(., aes(x= Samples, y=count_distributions))+
+    geom_boxplot()+
+    labs(title = "Individual Count Distributions",y="RNA Count Distributions")+
+    theme_bw()+
+    theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+          axis.title = element_text(size = 15, color = "black"),
+          axis.ticks = element_line(linewidth = 1.5),
+          axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+          axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+          strip.text.y = element_text(color = "white"))
+
+  
+```
+
+
+
+```{r Improving X-Axis labels from plot above}
+better_genecount_boxplot <- Ensembl_ID_rownames %>% 
+  rownames_to_column("genes") %>% 
+  pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
+  mutate(count_distributions = as.numeric(count_distributions)) %>% 
+  left_join(metadata, by = c("Samples" = "SampleName"))
+# the "+ 1" after y variable counts_distribution is to include zero values where log10(0) = undefined
+ggplot(better_genecount_boxplot, aes(x = Condition, y = count_distributions + 1)) +
+  geom_boxplot()+
+  scale_y_log10()+
+  labs(title = "Individual Count Distributions",y="RNA Count Distributions")+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+```
+
+```{r Box plot graph with log2 CPM values}
+count_matrix <- Ensembl_ID_rownames %>%
+  mutate(across(everything(), as.numeric)) %>%
+  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
+
+log2_cpm <- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
+
+log2_cpm_tbl <- log2_cpm %>% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
+  as.data.frame() %>%
+  rownames_to_column("genes") %>%
+  as_tibble()
+
+# log2_cpm_tbl %>%
+#   pivot_longer(-genes, names_to = "Samples", values_to = "Log2 CPM Distributions") %>%
+#   
+# ggplot(., aes(x = log2cpm)) +
+# theme_bw()
+```
+
+
+```{r A better version of the graph from above}
+
+better_log2cpm_boxplot <- log2_cpm_tbl %>% 
+  pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm_values") %>% 
+  mutate(log2cpm_values = as.numeric(log2cpm_values)) %>% 
+  left_join(metadata, by = c("Samples" = "SampleName"))
+
+ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
+  geom_boxplot() +
+  labs(title = "Log2 CPM Values",y="Log2 CPM Distributions")+
+  theme_bw()+
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+ggsave("better_log2cpm_boxplot.png", width = 6, height = 4, dpi = 300)
+
+```
+```{r All samples Log2CPM distributions put in histogram}
+log2_cpm_tibble <- log2_cpm %>%
+  as.data.frame() %>%
+  rownames_to_column("genes") %>%
+  as_tibble()
+
+log2_cpm_histogram <- log2_cpm_tibble %>%
+  pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
+
+ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
+  geom_histogram(bins = 50) +
+  labs(title = "Distribution of log2 CPM Values", x = "log2 CPM", y = "Frequency") +
+  theme_bw() +
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+ggsave("log2_cpm_tibble.png", width = 6, height = 4, dpi = 300)
+```
+
+```{r All samples in histogram distinguished by color}
+
+ggplot(log2_cpm_histogram,
+       aes(x = log2cpm,
+           fill = Samples)) +
+  geom_histogram(
+    bins = 50,
+    alpha = 0.4,
+    position = "identity"
+  ) +
+  theme_bw() +
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+
+```
+```{r Cleaner overlay}
+
+ggplot(log2_cpm_histogram,
+       aes(x = log2cpm)) +
+  geom_histogram(bins = 50) +
+  facet_wrap(~Samples) +
+  theme_bw() +
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = "black"),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = "white"))
+ggsave("log2_cpm_histogram.png", width = 6, height = 4, dpi = 300)
+```
 
