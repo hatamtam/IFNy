@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree90bc7793d9ed50f3908d2a724253a30074ee0303targetblank90bc779a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeba8149136947d8f8f819db007255e7167b3a713etargetblankba81491a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/90bc7793d9ed50f3908d2a724253a30074ee0303" target="_blank">90bc779</a>
+<a href="https://github.com/hatamtam/IFNy/tree/ba8149136947d8f8f819db007255e7167b3a713e" target="_blank">ba81491</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree90bc7793d9ed50f3908d2a724253a30074ee0303targetblank90bc779a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeba8149136947d8f8f819db007255e7167b3a713etargetblankba81491a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/90bc7793d9ed50f3908d2a724253a30074ee0303" target="_blank">90bc779</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/ba8149136947d8f8f819db007255e7167b3a713e" target="_blank">ba81491</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -556,7 +556,6 @@ were generated:
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    analysis/figure/
 
 Untracked files:
     Untracked:  Average_Mapped_Reads.png
@@ -568,6 +567,7 @@ Untracked files:
 
 Unstaged changes:
     Modified:   analysis/Practice_code.Rmd
+    Modified:   analysis/index.Rmd
 
 </code></pre>
 <p>
@@ -612,6 +612,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/ba8149136947d8f8f819db007255e7167b3a713e/analysis/IFNy_Metadata.Rmd" target="_blank">ba81491</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+<td>
+second commit
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/044b47924b0d26728de4d027d4ed88c2401e258e/docs/IFNy_Metadata.html" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -828,7 +862,7 @@ ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
   geom_point()+
   labs(title = &quot;average mapped reads&quot;,y=&quot;mean counts&quot; )+
   theme_bw()</code></pre>
-<p><img src="figure/IFNy_Metadata.Rmd/Averaged%20mapped%20reads%20by%20Species,%20column%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/IFNy_Metadata.Rmd/Averaged%20mapped%20reads%20by%20Species%20column%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code># savetest &lt;- metadata %&gt;% 
 #   group_by(Species) %&gt;% 
 #   summarise(avgMapped_Reads=mean(Mapped_Reads))
@@ -842,7 +876,7 @@ ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
   geom_boxplot(aes(fill=Species))+
   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
   labs(title = &quot;Average Mapped RNA_Sequencing Reads between Species&quot;,y=&quot;Mean Counts&quot;)</code></pre>
-<p><img src="figure/IFNy_Metadata.Rmd/Averaged%20mapped%20reads%20by%20Individual%20in%20Species,%20box%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/IFNy_Metadata.Rmd/Averaged%20mapped%20reads%20by%20Individual%20in%20Species%20box%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>  theme_bw()+
   theme(plot.title = element_text(size = rel(2), hjust = 0.5),
         axis.title = element_text(size = 15, color = &quot;black&quot;),
@@ -1230,6 +1264,44 @@ ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
   labs(title = &quot;Average Mapped Reads across Species&quot;,y = &quot;Average Counts&quot; )+
   theme_bw()</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Averaged%20mapped%20reads%20by%20Species,%20box%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Averaged-mapped-reads-by-Species,-box-plot-1">
+Past versions of "Averaged mapped reads by Species, box plot-1.png"
+</button>
+</p>
+<div id="fig-no-spaces-Averaged-mapped-reads-by-Species,-box-plot-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Averaged mapped reads by Species, box plot-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(metadata, aes(x=Condition,y=Mapped_Reads))+
   geom_col(aes(fill=Species))+
   geom_point()+
@@ -1242,6 +1314,45 @@ ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Mapped%20read%20counts%20between%20treatment%20conditions-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Mapped-read-counts-between-treatment-conditions-1">
+Past versions of "Mapped read counts between treatment conditions-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Mapped-read-counts-between-treatment-conditions-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Mapped read counts between treatment conditions-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>metadata %&gt;% 
   group_by(Individual) %&gt;% 
   summarise(avgMapped_Reads=mean(Mapped_Reads)) %&gt;% 
@@ -1257,6 +1368,46 @@ ggplot(., aes(x=Individual, y=avgMapped_Reads))+
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Average%20mapped%20read%20counts%20between%20each%20individual,%20column%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Average-mapped-read-counts-between-each-individual,-column-plot-1">
+Past versions of "Average mapped read counts between each individual,
+column plot-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Average-mapped-read-counts-between-each-individual,-column-plot-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Average mapped read counts between each individual, column plot-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggsave(&quot;Individual_Mapped_Reads.png&quot;)
 ggsave(&quot;Indiviual_Mapped_Reads.png&quot;, width = 6, height = 4, dpi = 300)</code></pre>
 <pre class="r"><code>metadata %&gt;% 
@@ -1274,6 +1425,46 @@ ggplot(., aes(x=Individual,y=avgMapped_Reads))+
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Average%20mapped%20read%20counts%20between%20each%20individual,%20box%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Average-mapped-read-counts-between-each-individual,-box-plot-1">
+Past versions of "Average mapped read counts between each individual,
+box plot-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Average-mapped-read-counts-between-each-individual,-box-plot-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Average mapped read counts between each individual, box plot-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>metadata %&gt;% 
   group_by(Species) %&gt;% 
   summarise(avgMapped_Reads=mean(Mapped_Reads)) %&gt;%
@@ -1282,6 +1473,46 @@ ggplot(., aes(x=Species,y=avgMapped_Reads))+
   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
   labs(title = &quot;Average Mapped Reads&quot;,y=&quot;Mean counts&quot; )</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Average%20mapped%20read%20counts%20between%20each%20individual,%20box%20plot-2.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Average-mapped-read-counts-between-each-individual,-box-plot-2">
+Past versions of "Average mapped read counts between each individual,
+box plot-2.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Average-mapped-read-counts-between-each-individual,-box-plot-2"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Average mapped read counts between each individual, box plot-2.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>  theme_bw()+
   theme(plot.title = element_text(size = rel(2), hjust = 0.5),
         axis.title = element_text(size = 15, color = &quot;black&quot;),
@@ -1679,6 +1910,46 @@ ggplot(., aes(x= Samples, y=count_distributions))+
           axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
           strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Making%20Boxplot%20showing%20distributions%20of%20gene%20counts-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Making-Boxplot-showing-distributions-of-gene-counts-1">
+Past versions of "Making Boxplot showing distributions of gene
+counts-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Making-Boxplot-showing-distributions-of-gene-counts-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Making Boxplot showing distributions of gene counts-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>better_genecount_boxplot &lt;- Ensembl_ID_rownames %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;count_distributions&quot;) %&gt;% 
@@ -1697,6 +1968,44 @@ ggplot(better_genecount_boxplot, aes(x = Condition, y = count_distributions + 1)
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Improving%20X-Axis%20labels%20from%20plot%20above-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Improving-X-Axis-labels-from-plot-above-1">
+Past versions of "Improving X-Axis labels from plot above-1.png"
+</button>
+</p>
+<div id="fig-no-spaces-Improving-X-Axis-labels-from-plot-above-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Improving X-Axis labels from plot above-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>count_matrix &lt;- Ensembl_ID_rownames %&gt;%
   mutate(across(everything(), as.numeric)) %&gt;%
   as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
@@ -1729,6 +2038,44 @@ ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/A%20better%20version%20of%20the%20graph%20from%20above-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-A-better-version-of-the-graph-from-above-1">
+Past versions of "A better version of the graph from above-1.png"
+</button>
+</p>
+<div id="fig-no-spaces-A-better-version-of-the-graph-from-above-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/A better version of the graph from above-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggsave(&quot;better_log2cpm_boxplot.png&quot;, width = 6, height = 4, dpi = 300)</code></pre>
 <pre class="r"><code>log2_cpm_tibble &lt;- log2_cpm %&gt;%
   as.data.frame() %&gt;%
@@ -1749,6 +2096,46 @@ ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/All%20samples%20Log2CPM%20distributions%20put%20in%20histogram-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-All-samples-Log2CPM-distributions-put-in-histogram-1">
+Past versions of "All samples Log2CPM distributions put in
+histogram-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-All-samples-Log2CPM-distributions-put-in-histogram-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/All samples Log2CPM distributions put in histogram-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggsave(&quot;log2_cpm_tibble.png&quot;, width = 6, height = 4, dpi = 300)</code></pre>
 <pre class="r"><code>ggplot(log2_cpm_histogram,
        aes(x = log2cpm,
@@ -1766,6 +2153,45 @@ ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/All%20samples%20in%20histogram%20distinguished%20by%20color-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-All-samples-in-histogram-distinguished-by-color-1">
+Past versions of "All samples in histogram distinguished by color-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-All-samples-in-histogram-distinguished-by-color-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/All samples in histogram distinguished by color-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(log2_cpm_histogram,
        aes(x = log2cpm)) +
   geom_histogram(bins = 50) +
@@ -1778,6 +2204,43 @@ ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Cleaner%20overlay-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Cleaner-overlay-1">
+Past versions of "Cleaner overlay-1.png"
+</button>
+</p>
+<div id="fig-no-spaces-Cleaner-overlay-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Cleaner overlay-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggsave(&quot;log2_cpm_histogram.png&quot;, width = 6, height = 4, dpi = 300)</code></pre>
 <br>
 <p>
