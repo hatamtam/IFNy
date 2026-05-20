@@ -72,7 +72,7 @@ mean(metadata$Mapped_Reads)
 metadata %>% 
   summary()
 ```
-```{r Averaged mapped reads by Species, column plot}
+```{r Averaged mapped reads by Species column plot}
 metadata %>% 
   group_by(Species) %>% 
   summarise(avgMapped_Reads=mean(Mapped_Reads))
@@ -89,7 +89,7 @@ ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
   
 ```
 
-```{r Averaged mapped reads by Individual in Species, box plot}
+```{r Averaged mapped reads by Individual in Species box plot}
 
 # savetest <- metadata %>% 
 #   group_by(Species) %>% 
