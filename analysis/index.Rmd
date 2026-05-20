@@ -11,5 +11,5 @@ editor_options:
 Welcome to my research website. This is where my R code will be
 
 ### Page 1 
-[First Analysis] (https://hatamtam.github.io/IFNy_Metadata.html)
+[First Analysis](https://hatamtam.github.io/IFNy_Metadata.html)
 
