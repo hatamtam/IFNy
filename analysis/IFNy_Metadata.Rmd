@@ -26,7 +26,7 @@ pre[class] {
 }
 ```
 
-Library Section
+### Library Section
 ```{r Libraries}
 library(tidyverse)
 library(dplyr)
@@ -36,7 +36,7 @@ library(edgeR)
 ```
 
 
-
+### Viewing Data
 ```{r}
 
 # this command creates an object (remove hashtag to make the function below operational)
@@ -51,18 +51,14 @@ metadata <- readRDS("data/metadata_IFNy.RDS")
 counts <- readRDS("data/counts_IFNy.RDS")
 ```
 
-### Viewing Data
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 head(metadata)
 ```
 
-```{r}
-head(counts)
-```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 metadata$Condition
 length(metadata$Condition) ### number of rows
 str(metadata)  
@@ -72,34 +68,9 @@ mean(metadata$Mapped_Reads)
 metadata %>% 
   summary()
 ```
-```{r Averaged mapped reads by Species column plot}
-metadata %>% 
-  group_by(Species) %>% 
-  summarise(avgMapped_Reads=mean(Mapped_Reads))
-
-savetest <- metadata %>% 
-  group_by(Species) %>% 
-  summarise(avgMapped_Reads=mean(Mapped_Reads))
-ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
-  geom_col(aes(fill=Species))+
-  geom_point()+
-  labs(title = "average mapped reads",y="mean counts" )+
-  theme_bw()
-  
-  
-```
 
 ```{r Averaged mapped reads by Individual in Species box plot}
 
-# savetest <- metadata %>% 
-#   group_by(Species) %>% 
-#   summarise(avgMapped_Reads=mean(Mapped_Reads))
-# ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
-#   geom_boxplot(aes(fill=Species))+
-#   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads, shape = Species))+
-#   # scale_color_discrete(values = c("black"))+
-#   labs(title = "average mapped reads",y="mean counts" )
-  
 ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
   geom_boxplot(aes(fill=Species))+
   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
@@ -111,42 +82,9 @@ ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
         axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
         axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = "white"))
-# ggsave("Average_Mapped_Reads.png")
-# ggsave("Average_Mapped_Reads.png", width = 6, height = 4, dpi = 300)
 
 ```
 
-
-```{r Averaged mapped reads by Species, box plot}
-
-savetest <- metadata %>% 
-  group_by(Species) %>% 
-  summarise(avgMapped_Reads=mean(Mapped_Reads))
-
-ggplot(savetest, aes(x=Species,y=avgMapped_Reads))+
-  geom_boxplot(aes(fill=Species))+
-  geom_dotplot(binaxis = "y", stackdir = "centerwhole", dotsize = 0.5, alpha = 0.7)+
-  labs(title = "Average Mapped Reads across Species",y = "Average Counts" )+
-  theme_bw()
-  
-```  
-
-
-
-```{r Mapped read counts between treatment conditions}
-ggplot(metadata, aes(x=Condition,y=Mapped_Reads))+
-  geom_col(aes(fill=Species))+
-  geom_point()+
-  labs(title = "mapped reads",y="counts" )+
-  theme_bw()+
-  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
-        axis.title = element_text(size = 15, color = "black"),
-        axis.ticks = element_line(linewidth = 1.5),
-        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
-        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
-        strip.text.y = element_text(color = "white"))
-   
-```
 ```{r Average mapped read counts between each individual, column plot}
 
 metadata %>% 
@@ -167,45 +105,13 @@ ggsave("Individual_Mapped_Reads.png")
 ggsave("Indiviual_Mapped_Reads.png", width = 6, height = 4, dpi = 300)
 ```
 
-```{r Average mapped read counts between each individual, box plot}
-
-metadata %>% 
-  group_by(Individual) %>% 
-  summarise(avgMapped_Reads=mean(Mapped_Reads)) %>% 
-ggplot(., aes(x=Individual,y=avgMapped_Reads))+
-  geom_boxplot(aes(fill=Individual))+
-  geom_point()+
-  labs(title = "Mapped reads between individuals",y="Mapped read count", x="Individual" )+
-  theme_bw()+
-  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
-        axis.title = element_text(size = 15, color = "black"),
-        axis.ticks = element_line(linewidth = 1.5),
-        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
-        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
-        strip.text.y = element_text(color = "white"))
-metadata %>% 
-  group_by(Species) %>% 
-  summarise(avgMapped_Reads=mean(Mapped_Reads)) %>%
-ggplot(., aes(x=Species,y=avgMapped_Reads))+
-  geom_boxplot(aes(fill=Species))+
-  geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
-  labs(title = "Average Mapped Reads",y="Mean counts" )
-  theme_bw()+
-  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
-        axis.title = element_text(size = 15, color = "black"),
-        axis.ticks = element_line(linewidth = 1.5),
-        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
-        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
-        strip.text.y = element_text(color = "white"))
-ggsave("Average_Mapped_Reads.png")
-ggsave("Average_Mapped_Reads.png", width = 6, height = 4, dpi = 300)
-```
 ```{r Making Boxplot showing distributions of gene counts}
-
+# The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
 Ensembl_ID_rownames <- counts %>%
   column_to_rownames(var = "Ensemble") %>% 
   select(-c(Entrez_ID, Symbol))
 
+# The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
 Ensembl_ID_rownames %>% 
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
@@ -221,13 +127,11 @@ ggplot(., aes(x= Samples, y=count_distributions))+
           axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
           axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
           strip.text.y = element_text(color = "white"))
-
   
 ```
 
 
-
-```{r Improving X-Axis labels from plot above}
+```{r A Boxplot of Continuous Count values}
 better_genecount_boxplot <- Ensembl_ID_rownames %>% 
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
@@ -247,7 +151,8 @@ ggplot(better_genecount_boxplot, aes(x = Condition, y = count_distributions + 1)
         strip.text.y = element_text(color = "white"))
 ```
 
-```{r Box plot graph with log2 CPM values}
+```{r Converting the Continuous Counts values to Log2 CPM values}
+
 count_matrix <- Ensembl_ID_rownames %>%
   mutate(across(everything(), as.numeric)) %>%
   as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
@@ -259,15 +164,10 @@ log2_cpm_tbl <- log2_cpm %>% #We are now converting this log2_cpm function data 
   rownames_to_column("genes") %>%
   as_tibble()
 
-# log2_cpm_tbl %>%
-#   pivot_longer(-genes, names_to = "Samples", values_to = "Log2 CPM Distributions") %>%
-#   
-# ggplot(., aes(x = log2cpm)) +
-# theme_bw()
 ```
 
 
-```{r A better version of the graph from above}
+```{r A Boxplot of Log2 CPM values}
 
 better_log2cpm_boxplot <- log2_cpm_tbl %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm_values") %>% 
@@ -284,7 +184,6 @@ ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
         axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
         axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = "white"))
-ggsave("better_log2cpm_boxplot.png", width = 6, height = 4, dpi = 300)
 
 ```
 ```{r All samples Log2CPM distributions put in histogram}
