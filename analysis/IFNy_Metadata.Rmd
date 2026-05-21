@@ -74,9 +74,9 @@ metadata %>%
 ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
   geom_boxplot(aes(fill=Species))+
   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
-  labs(title = "Average Mapped RNA_Sequencing Reads between Species",y="Mean Counts")
+  labs(title = "Average Mapped RNA_Sequencing Reads between Species",y="Mean Counts")+
   theme_bw()+
-  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+  theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
         axis.title = element_text(size = 15, color = "black"),
         axis.ticks = element_line(linewidth = 1.5),
         axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
@@ -104,19 +104,22 @@ ggplot(., aes(x=Individual, y=avgMapped_Reads))+
 
 ```
 
-```{r Making Boxplot showing distributions of gene counts}
+```{r Assigning Ensemble_IDs to row names}
 
 # The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
 Ensembl_ID_rownames <- counts %>%
   column_to_rownames(var = "Ensemble") %>% 
   select(-c(Entrez_ID, Symbol))
+```
+
+```{r Making Boxplot showing distributions of gene counts}
 
 # The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
 Ensembl_ID_rownames %>% 
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
   mutate(count_distributions = as.numeric(count_distributions)) %>% 
-   
+  
 ggplot(., aes(x= Samples, y=count_distributions))+
     geom_boxplot()+
     labs(title = "Individual Count Distributions",y="RNA Count Distributions")+
@@ -138,7 +141,7 @@ better_genecount_boxplot <- Ensembl_ID_rownames %>%
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
   mutate(count_distributions = as.numeric(count_distributions)) %>% 
   left_join(metadata, by = c("Samples" = "SampleName"))
-# the "+ 1" after y variable counts_distribution is to include zero values where log10(0) = undefined
+# the "+ 1" after y variable counts_distribution shown below is to include zero values where log10(0) = undefined
 ggplot(better_genecount_boxplot, aes(x = Condition, y = count_distributions + 1)) +
   geom_boxplot()+
   scale_y_log10()+
@@ -187,8 +190,9 @@ ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
         strip.text.y = element_text(color = "white"))
 
 ```
-```{r All samples Log2CPM distributions put in histogram}
 
+
+```{r All samples Log2CPM distributions put in histogram}
 log2_cpm_tibble <- log2_cpm %>%
   as.data.frame() %>%
   rownames_to_column("genes") %>%
@@ -210,7 +214,7 @@ ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
 
 ```
 
-```{r All samples in histogram distinguished by color}
+```{r All samples in histogram distinguished by color, eval=FALSE, include=FALSE}
 
 ggplot(log2_cpm_histogram,
        aes(x = log2cpm,
@@ -229,7 +233,8 @@ ggplot(log2_cpm_histogram,
         strip.text.y = element_text(color = "white"))
 
 ```
-```{r Cleaner overlay}
+
+```{r Separating the histogram of log2 cpm values per unique sample}
 
 ggplot(log2_cpm_histogram,
        aes(x = log2cpm)) +
@@ -244,4 +249,59 @@ ggplot(log2_cpm_histogram,
         strip.text.y = element_text(color = "white"))
 
 ```
+
+```{r Filtering out lowly expressed genes where log2cpm is less than zero}
+
+gene_means <- rowMeans(log2_cpm)
+  filtered_log2_cpm <- log2_cpm[gene_means > 0, ]
+  # this code output the number of rows, i.e: the number of genes where log2 > 0
+  #nrow(filtered_log2_cpm)
+  # this code outputs the difference between rows of the df log2_cpm, unfiltered from the rows of the df filtered_log2_cpm, which is the number of genes that were removed from filtering, as in the number of genes removed where log2 cpm < 0
+  #nrow(log2_cpm) - nrow(filtered_log2_cpm)
+
+# Before filtering
+  before_tbl <- log2_cpm %>%
+  as.data.frame() %>%
+  rownames_to_column("genes") %>%
+  pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm") %>%
+  mutate(Filter = "Before")
+
+# After filtering
+  after_tbl <- filtered_log2_cpm %>%
+  as.data.frame() %>%
+  rownames_to_column("genes") %>%
+  pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm") %>%
+  mutate(Filter = "After")
+
+# This combines the before and after tables to visualize the original and filtered cpm frequency values 
+combined_tbl <- bind_rows(before_tbl, after_tbl)
+
+# This code creates a histogram cpm distribution **before filtering**
+ggplot(before_tbl, aes(x = log2cpm, fill = )) +
+  geom_histogram(bins = 50, alpha = 0.3, position = ("identity")) +
+  theme_bw() +
+  labs(title = "Log2 CPM Distributions", x = "log2 CPM", y = "Frequencies before filtering")
+
+# This code creates a histogram cpm distribution **after filtering**
+ggplot(after_tbl, aes(x = log2cpm, fill = )) +
+  geom_histogram(bins = 50, alpha = 0.3, position = ("identity")) +
+  theme_bw() +
+  labs(title = "Log2 CPM Distributions", x = "log2 CPM", y = "Frequencies after filtering")
+
+# This code creates a histogram cpm distribution data before and after filtering
+ggplot(combined_tbl, aes(x = log2cpm, fill = Filter)) +
+  geom_histogram(bins = 50, alpha = 0.3, position = ("identity")) +
+  theme_bw() +
+  labs(title = "Log2 CPM Distributions", x = "log2 CPM", y = "Frequency")
+
+# This code creates box plots cpm distribution data before and after filtering
+reordered_combined_tbl <- combined_tbl %>%
+  mutate(Filter = factor(Filter, levels = c("Before", "After"))) 
+
+ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw() +
+  labs(title = "Log2 CPM Boxplots",y = "log2 CPM")
+```
+
 
