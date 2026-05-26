@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreed231801c7a2618be0b2980b6dc02d3e6719b98c6targetblankd231801a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreece5eb3aae246f5d4905e9278d4e1ecfbc7eab020targetblankce5eb3aa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/d231801c7a2618be0b2980b6dc02d3e6719b98c6" target="_blank">d231801</a>
+<a href="https://github.com/hatamtam/IFNy/tree/ce5eb3aae246f5d4905e9278d4e1ecfbc7eab020" target="_blank">ce5eb3a</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreed231801c7a2618be0b2980b6dc02d3e6719b98c6targetblankd231801a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreece5eb3aae246f5d4905e9278d4e1ecfbc7eab020targetblankce5eb3aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/d231801c7a2618be0b2980b6dc02d3e6719b98c6" target="_blank">d231801</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/ce5eb3aae246f5d4905e9278d4e1ecfbc7eab020" target="_blank">ce5eb3a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -611,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/ce5eb3aae246f5d4905e9278d4e1ecfbc7eab020/analysis/IFNy_Metadata.Rmd" target="_blank">ce5eb3a</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+<td>
+wflow_publish("analysis/IFNy_Metadata.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/IFNy_Metadata.html" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1627,15 +1661,17 @@ Harsha Tamtam
 <p>####Identifying genes of interest whose RNA counts change across
 species and/or IFNy treatment</p>
 <pre class="r"><code># here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
+
+#Remove the hashtag after the filter() command to activate, and remember to put the %&gt;% pathing after line 326. 
+
 search_table &lt;- counts %&gt;%
   column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
-  dplyr::select(Entrez_ID, Symbol) %&gt;% 
-  filter(Symbol == &quot;STAT1&quot;)
+  dplyr::select(Entrez_ID, Symbol) 
+  #filter(Symbol == &quot; &quot;)
 
-head(search_table)</code></pre>
-<pre><code>                Entrez_ID Symbol
-ENSG00000115415      6772  STAT1</code></pre>
-<pre class="r"><code># here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
+#head(search_table)
+
+# here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
 lookup_table &lt;- counts %&gt;%
   column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
   dplyr::select(Entrez_ID, Symbol) </code></pre>
@@ -1700,6 +1736,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-1.png" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-1.png" target="_blank">fa788e8</a>
 </td>
 <td>
@@ -1742,6 +1789,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-2.png" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-2.png" target="_blank">fa788e8</a>
@@ -1788,6 +1846,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-3.png" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-3.png" target="_blank">fa788e8</a>
 </td>
 <td>
@@ -1830,6 +1899,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-4.png" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-4.png" target="_blank">fa788e8</a>
@@ -1876,6 +1956,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-5.png" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-5.png" target="_blank">fa788e8</a>
 </td>
 <td>
@@ -1918,6 +2009,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-6.png" target="_blank">cbe45d3</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-6.png" target="_blank">fa788e8</a>
