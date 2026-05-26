@@ -11,7 +11,7 @@
 
 <meta name="author" content="Harsha Tamtam" />
 
-<meta name="date" content="2026-05-21" />
+<meta name="date" content="2026-05-26" />
 
 <title>IFNy_Metadata</title>
 
@@ -361,7 +361,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">IFNy_Metadata</h1>
 <h4 class="author">Harsha Tamtam</h4>
-<h4 class="date">2026-05-21</h4>
+<h4 class="date">2026-05-26</h4>
 
 </div>
 
@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-05-21
+<strong>Last updated:</strong> 2026-05-26
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree612753aa0307d534369c806df45cad7c2dde8190targetblank612753aa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree3c3aedf50b881b643f1f3164aa3ca4447d91e411targetblank3c3aedfa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/612753aa0307d534369c806df45cad7c2dde8190" target="_blank">612753a</a>
+<a href="https://github.com/hatamtam/IFNy/tree/3c3aedf50b881b643f1f3164aa3ca4447d91e411" target="_blank">3c3aedf</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree612753aa0307d534369c806df45cad7c2dde8190targetblank612753aa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree3c3aedf50b881b643f1f3164aa3ca4447d91e411targetblank3c3aedfa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/612753aa0307d534369c806df45cad7c2dde8190" target="_blank">612753a</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/3c3aedf50b881b643f1f3164aa3ca4447d91e411" target="_blank">3c3aedf</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -611,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/3c3aedf50b881b643f1f3164aa3ca4447d91e411/analysis/IFNy_Metadata.Rmd" target="_blank">3c3aedf</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+<td>
+wflow_publish("analysis/IFNy_Metadata.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/4d8043c5f37de05510972e88b2d7fb63af251782/docs/IFNy_Metadata.html" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -833,8 +867,41 @@ library(tibble)
 library(scales)
 library(edgeR)</code></pre>
 </div>
-<div id="viewing-data" class="section level3">
-<h3>Viewing Data</h3>
+<div id="viewing-and-manipulating-dataframes" class="section level3">
+<h3>Viewing and Manipulating Dataframes</h3>
+<pre class="r"><code># this command creates an object (remove hashtag to make the function below operational)
+# my_data &lt;- data.frame(x = 1:5, y = letters[1:5])
+
+# this commands write file into the disk drive (remove hashtag to make the function below operational)
+# saveRDS(metadata, &quot;data/metadata_IFNy.RDS&quot;)
+# saveRDS(counts, &quot;data/counts_IFNy.RDS&quot;)
+
+# these commands load the files above into a different name (the object name)
+metadata &lt;- readRDS(&quot;data/metadata_IFNy.RDS&quot;)
+counts &lt;- readRDS(&quot;data/counts_IFNy.RDS&quot;)
+
+# The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
+Ensembl_ID_rownames &lt;- counts %&gt;%
+  column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
+  dplyr::select(-c(Entrez_ID, Symbol))</code></pre>
+<pre class="r"><code>count_matrix &lt;- Ensembl_ID_rownames %&gt;%
+  mutate(across(everything(), as.numeric)) %&gt;%
+  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
+
+log2_cpm &lt;- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
+
+log2_cpm_tbl &lt;- log2_cpm %&gt;% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
+  as.data.frame() %&gt;%
+  rownames_to_column(&quot;genes&quot;) %&gt;%
+  as_tibble()</code></pre>
+</div>
+<div id="data-analyses" class="section level3">
+<h3>Data Analyses</h3>
+<div
+id="boxplot-and-column-chart-showing-average-and-individual-mapped-rna-reads"
+class="section level4">
+<h4>Boxplot and Column chart showing average and individual mapped RNA
+reads</h4>
 <pre class="r"><code>ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
   geom_boxplot(aes(fill=Species))+
   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
@@ -874,6 +941,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Averaged mapped reads by Individual in Species box plot-1.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/54dddb1872c2bd60d3fdbdde5e969607b2198580/docs/figure/IFNy_Metadata.Rmd/Averaged mapped reads by Individual in Species box plot-1.png" target="_blank">54dddb1</a>
 </td>
 <td>
@@ -901,56 +979,14 @@ ggplot(., aes(x=Individual, y=avgMapped_Reads))+
         axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
-<p><img src="figure/IFNy_Metadata.Rmd/Average%20mapped%20read%20counts%20between%20each%20individual,%20column%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Average-mapped-read-counts-between-each-individual,-column-plot-1">
-Past versions of "Average mapped read counts between each individual,
-column plot-1.png"
-</button>
-</p>
-<div
-id="fig-no-spaces-Average-mapped-read-counts-between-each-individual,-column-plot-1"
-class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/Average mapped read counts between each individual, column plot-1.png" target="_blank">044b479</a>
-</td>
-<td>
-Harsha Tamtam
-</td>
-<td>
-2026-05-20
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code># The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
-Ensembl_ID_rownames &lt;- counts %&gt;%
-  column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
-  select(-c(Entrez_ID, Symbol))</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/Average%20mapped%20read%20counts%20between%20each%20individual%20in%20a%20column%20plot-1.png" alt="" width="672" style="display: block; margin: auto;" />
+####Figures showing distributions of gene counts</p>
 <pre class="r"><code># The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
 Ensembl_ID_rownames %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;count_distributions&quot;) %&gt;% 
   mutate(count_distributions = as.numeric(count_distributions)) %&gt;% 
+
   
 ggplot(., aes(x= Samples, y=count_distributions))+
     geom_boxplot()+
@@ -1059,16 +1095,6 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<pre class="r"><code>count_matrix &lt;- Ensembl_ID_rownames %&gt;%
-  mutate(across(everything(), as.numeric)) %&gt;%
-  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
-
-log2_cpm &lt;- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
-
-log2_cpm_tbl &lt;- log2_cpm %&gt;% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
-  as.data.frame() %&gt;%
-  rownames_to_column(&quot;genes&quot;) %&gt;%
-  as_tibble()</code></pre>
 <pre class="r"><code>better_log2cpm_boxplot &lt;- log2_cpm_tbl %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm_values&quot;) %&gt;% 
   mutate(log2cpm_values = as.numeric(log2cpm_values)) %&gt;% 
@@ -1122,12 +1148,14 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<pre class="r"><code>log2_cpm_tibble &lt;- log2_cpm %&gt;%
+<p>####Histograms showing distributions of log2 CPM RNA counts</p>
+<pre class="r"><code>log2_cpm_tbl &lt;- log2_cpm %&gt;%
   as.data.frame() %&gt;%
   rownames_to_column(&quot;genes&quot;) %&gt;%
   as_tibble()
 
-log2_cpm_histogram &lt;- log2_cpm_tibble %&gt;%
+#head(log2_cpm_tbl)</code></pre>
+<pre class="r"><code>log2_cpm_histogram &lt;- log2_cpm_tbl %&gt;%
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;)
 
 ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
@@ -1182,6 +1210,72 @@ Harsha Tamtam
 </div>
 </div>
 <pre class="r"><code>ggplot(log2_cpm_histogram,
+       aes(x = log2cpm,
+           fill = Samples)) +
+  geom_histogram(
+    bins = 50,
+    alpha = 0.4,
+    position = &quot;identity&quot;
+  ) +
+  theme_bw() +
+  theme(plot.title = element_text(size = rel(2), hjust = 0.5),
+        axis.title = element_text(size = 15, color = &quot;black&quot;),
+        axis.ticks = element_line(linewidth = 1.5),
+        axis.text.y = element_text(size =10, color = &quot;black&quot;, angle = 0, hjust = 0.8, vjust = 0.5),
+        axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
+        strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/All%20samples%20in%20histogram%20distinguished%20by%20color-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-All-samples-in-histogram-distinguished-by-color-1">
+Past versions of "All samples in histogram distinguished by color-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-All-samples-in-histogram-distinguished-by-color-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/All samples in histogram distinguished by color-1.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/All samples in histogram distinguished by color-1.png" target="_blank">044b479</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ggplot(log2_cpm_histogram,
        aes(x = log2cpm)) +
   geom_histogram(bins = 50) +
   facet_wrap(~Samples) +
@@ -1193,6 +1287,47 @@ Harsha Tamtam
         axis.text.x = element_text(size =10, color = &quot;black&quot;, angle = 90, hjust = 1, vjust = 0.2),
         strip.text.y = element_text(color = &quot;white&quot;))</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Separating%20the%20histogram%20of%20log2%20cpm%20values%20per%20unique%20sample-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Separating-the-histogram-of-log2-cpm-values-per-unique-sample-1">
+Past versions of "Separating the histogram of log2 cpm values per unique
+sample-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Separating-the-histogram-of-log2-cpm-values-per-unique-sample-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Separating the histogram of log2 cpm values per unique sample-1.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>####Filtering out RNA counts where log2 cpm is less than zero</p>
 <pre class="r"><code>gene_means &lt;- rowMeans(log2_cpm)
   filtered_log2_cpm &lt;- log2_cpm[gene_means &gt; 0, ]
   # this code output the number of rows, i.e: the number of genes where log2 &gt; 0
@@ -1223,18 +1358,138 @@ ggplot(before_tbl, aes(x = log2cpm, fill = )) +
   theme_bw() +
   labs(title = &quot;Log2 CPM Distributions&quot;, x = &quot;log2 CPM&quot;, y = &quot;Frequencies before filtering&quot;)</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Filtering%20out%20lowly%20expressed%20genes%20where%20log2cpm%20is%20less%20than%20zero-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-1">
+Past versions of "Filtering out lowly expressed genes where log2cpm is
+less than zero-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-1.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># This code creates a histogram cpm distribution **after filtering**
 ggplot(after_tbl, aes(x = log2cpm, fill = )) +
   geom_histogram(bins = 50, alpha = 0.3, position = (&quot;identity&quot;)) +
   theme_bw() +
   labs(title = &quot;Log2 CPM Distributions&quot;, x = &quot;log2 CPM&quot;, y = &quot;Frequencies after filtering&quot;)</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Filtering%20out%20lowly%20expressed%20genes%20where%20log2cpm%20is%20less%20than%20zero-2.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-2">
+Past versions of "Filtering out lowly expressed genes where log2cpm is
+less than zero-2.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-2"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-2.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># This code creates a histogram cpm distribution data before and after filtering
 ggplot(combined_tbl, aes(x = log2cpm, fill = Filter)) +
   geom_histogram(bins = 50, alpha = 0.3, position = (&quot;identity&quot;)) +
   theme_bw() +
   labs(title = &quot;Log2 CPM Distributions&quot;, x = &quot;log2 CPM&quot;, y = &quot;Frequency&quot;)</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Filtering%20out%20lowly%20expressed%20genes%20where%20log2cpm%20is%20less%20than%20zero-3.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-3">
+Past versions of "Filtering out lowly expressed genes where log2cpm is
+less than zero-3.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-3"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-3.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># This code creates box plots cpm distribution data before and after filtering
 reordered_combined_tbl &lt;- combined_tbl %&gt;%
   mutate(Filter = factor(Filter, levels = c(&quot;Before&quot;, &quot;After&quot;))) 
@@ -1244,6 +1499,109 @@ ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
   theme_bw() +
   labs(title = &quot;Log2 CPM Boxplots&quot;,y = &quot;log2 CPM&quot;)</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/Filtering%20out%20lowly%20expressed%20genes%20where%20log2cpm%20is%20less%20than%20zero-4.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-4">
+Past versions of "Filtering out lowly expressed genes where log2cpm is
+less than zero-4.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Filtering-out-lowly-expressed-genes-where-log2cpm-is-less-than-zero-4"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-4.png" target="_blank">4d8043c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>####Identifying genes of interest whose RNA counts change across
+species and/or IFNy treatment</p>
+<pre class="r"><code># here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
+search_table &lt;- counts %&gt;%
+  column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
+  dplyr::select(Entrez_ID, Symbol) %&gt;% 
+  filter(Symbol == &quot;STAT1&quot;)
+
+head(search_table)</code></pre>
+<pre><code>                Entrez_ID Symbol
+ENSG00000115415      6772  STAT1</code></pre>
+<pre class="r"><code># here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
+lookup_table &lt;- counts %&gt;%
+  column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
+  dplyr::select(Entrez_ID, Symbol) </code></pre>
+<pre class="r"><code>plot_my_genes &lt;- function(counts_df, gene_id){
+
+gene_tbl &lt;- counts_df %&gt;% 
+  dplyr::filter(genes == gene_id)
+
+gene_name &lt;- lookup_table %&gt;% 
+  dplyr::filter(rownames(.) == gene_id) %&gt;% 
+  pull(Symbol)
+
+gene_long &lt;- gene_tbl %&gt;%
+   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;)
+
+gene_plot &lt;- gene_long %&gt;%
+  left_join(metadata, by = c(&quot;Samples&quot; = &quot;SampleName&quot;)) %&gt;%
+  mutate(Treatment = factor(Treatment, levels = c(&quot;VEH&quot;, &quot;IFNy&quot;)))
+
+ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = Individual)) +
+  facet_wrap(~Species) +
+  labs(title = paste0(gene_name, &quot;Expression Across Conditions&quot;),
+       y = &quot;log2 CPM&quot;,
+       x = &quot;Treatment&quot;) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5)),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+}</code></pre>
+<pre class="r"><code>#Note that the capitalized X and lowercase X are important, make sure to distinguish between the cases here!
+
+lapply(X = c(&quot;ENSG00000118194&quot;, &quot;ENSG00000169245&quot;, &quot;ENSG00000115415&quot;, &quot;ENSG00000179583&quot;, &quot;ENSG00000197442&quot;, &quot;ENSG00000053918&quot;), FUN = function(x) {plot_my_genes(log2_cpm_tbl, x)})</code></pre>
+<pre><code>[[1]]</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+[[2]]</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-2.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+[[3]]</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-3.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+[[4]]</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-4.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+[[5]]</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-5.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+[[6]]</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-6.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1294,6 +1652,7 @@ loaded via a namespace (and not attached):
 [45] tidyselect_1.2.1   rstudioapi_0.18.0  knitr_1.51         farver_2.1.2      
 [49] htmltools_0.5.9    labeling_0.4.3     rmarkdown_2.31     compiler_4.6.0    
 [53] getPass_0.2-4      S7_0.2.2          </code></pre>
+</div>
 </div>
 </div>
 </div>
