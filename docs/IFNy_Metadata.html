@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreece5eb3aae246f5d4905e9278d4e1ecfbc7eab020targetblankce5eb3aa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree9cedd106d24f894fae2cde282cfb4bc835d7b8b4targetblank9cedd10a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/ce5eb3aae246f5d4905e9278d4e1ecfbc7eab020" target="_blank">ce5eb3a</a>
+<a href="https://github.com/hatamtam/IFNy/tree/9cedd106d24f894fae2cde282cfb4bc835d7b8b4" target="_blank">9cedd10</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreece5eb3aae246f5d4905e9278d4e1ecfbc7eab020targetblankce5eb3aa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree9cedd106d24f894fae2cde282cfb4bc835d7b8b4targetblank9cedd10a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/ce5eb3aae246f5d4905e9278d4e1ecfbc7eab020" target="_blank">ce5eb3a</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/9cedd106d24f894fae2cde282cfb4bc835d7b8b4" target="_blank">9cedd10</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -611,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9cedd106d24f894fae2cde282cfb4bc835d7b8b4/analysis/IFNy_Metadata.Rmd" target="_blank">9cedd10</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+<td>
+wflow_publish("analysis/IFNy_Metadata.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/e30b0fdf7138133739a268d2e4ead29029d83832/docs/IFNy_Metadata.html" target="_blank">e30b0fd</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-26
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1093,7 +1127,7 @@ Harsha Tamtam
 Ensembl_ID_rownames %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;count_distributions&quot;) %&gt;% 
-  mutate(count_distributions = as.numeric(count_distributions)) %&gt;% 
+  mutate(count_distributions = as.numeric(count_distributions)) %&gt;%
 
   
 ggplot(., aes(x= Samples, y=count_distributions))+
@@ -1664,17 +1698,52 @@ species and/or IFNy treatment</p>
 
 #Remove the hashtag after the filter() command to activate, and remember to put the %&gt;% pathing after line 326. 
 
-search_table &lt;- counts %&gt;%
+lookup_table &lt;- counts %&gt;%
   column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
   dplyr::select(Entrez_ID, Symbol) 
   #filter(Symbol == &quot; &quot;)
 
-#head(search_table)
+#head(lookup_table)</code></pre>
+<pre class="r"><code># 
+# Ensembl_ID_rownames %&gt;% 
+#   rownames_to_column(&quot;genes&quot;) %&gt;% 
+#   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;count_distributions&quot;) %&gt;% 
+#   mutate(count_distributions = as.numeric(count_distributions)) %&gt;% 
 
-# here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
-lookup_table &lt;- counts %&gt;%
-  column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
-  dplyr::select(Entrez_ID, Symbol) </code></pre>
+#head(log2_cpm_tbl)
+
+MyFavGene_tbl &lt;- log2_cpm_tbl %&gt;% 
+  filter(genes %in% c(&quot;ENSG00000118194&quot;, &quot;ENSG00000169245&quot;, &quot;ENSG00000115415&quot;, &quot;ENSG00000179583&quot;, &quot;ENSG00000197442&quot;, &quot;ENSG00000053918&quot;))
+
+#head(MyFavGene_tbl)
+
+MyFavGene_long &lt;- MyFavGene_tbl %&gt;%
+   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;)
+
+#head(MyFavGene_long)
+
+MyFavGene_plot &lt;- MyFavGene_long %&gt;%
+  left_join(metadata, by = c(&quot;Samples&quot; = &quot;SampleName&quot;)) %&gt;%
+  left_join(lookup_table %&gt;%
+              rownames_to_column(&quot;genes&quot;) %&gt;% 
+              select(genes, Symbol),
+            by = &quot;genes&quot;) %&gt;% 
+  mutate(Treatment = factor(Treatment, levels = c(&quot;VEH&quot;, &quot;IFNy&quot;)))
+
+
+#head(MyFavGene_plot)
+
+ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = Individual)) +
+  facet_wrap(vars(Species, Symbol), nrow=2, ncol=6) +
+  labs(title = &quot;Genes of Interests&#39; RNA Expressions Across Species and Treatment Conditions&quot;,
+       y = &quot;log2 CPM&quot;,
+       x = &quot;Treatment&quot;) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1)),
+        axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/Showing%20MyFavGene%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot_my_genes &lt;- function(counts_df, gene_id){
 
 gene_tbl &lt;- counts_df %&gt;% 
