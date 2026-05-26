@@ -36,8 +36,8 @@ library(edgeR)
 ```
 
 
-### Viewing Data
-```{r include=FALSE}
+### Viewing and Manipulating Dataframes
+```{r}
 
 # this command creates an object (remove hashtag to make the function below operational)
 # my_data <- data.frame(x = 1:5, y = letters[1:5])
@@ -49,9 +49,30 @@ library(edgeR)
 # these commands load the files above into a different name (the object name)
 metadata <- readRDS("data/metadata_IFNy.RDS")
 counts <- readRDS("data/counts_IFNy.RDS")
+
+# The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
+Ensembl_ID_rownames <- counts %>%
+  column_to_rownames(var = "Ensemble") %>% 
+  dplyr::select(-c(Entrez_ID, Symbol))
+
 ```
 
+```{r Converting the Continuous Counts values to Log2 CPM values}
 
+count_matrix <- Ensembl_ID_rownames %>%
+  mutate(across(everything(), as.numeric)) %>%
+  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
+
+log2_cpm <- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
+
+log2_cpm_tbl <- log2_cpm %>% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
+  as.data.frame() %>%
+  rownames_to_column("genes") %>%
+  as_tibble()
+
+```
+
+### Data Analyses
 
 ```{r eval=FALSE, include=FALSE}
 head(metadata)
@@ -68,6 +89,7 @@ mean(metadata$Mapped_Reads)
 metadata %>% 
   summary()
 ```
+#### Boxplot and Column chart showing average and individual mapped RNA reads
 
 ```{r Averaged mapped reads by Individual in Species box plot}
 
@@ -85,7 +107,7 @@ ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
 
 ```
 
-```{r Average mapped read counts between each individual, column plot}
+```{r Average mapped read counts between each individual in a column plot}
 
 metadata %>% 
   group_by(Individual) %>% 
@@ -103,14 +125,7 @@ ggplot(., aes(x=Individual, y=avgMapped_Reads))+
         strip.text.y = element_text(color = "white"))
 
 ```
-
-```{r Assigning Ensemble_IDs to row names}
-
-# The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
-Ensembl_ID_rownames <- counts %>%
-  column_to_rownames(var = "Ensemble") %>% 
-  select(-c(Entrez_ID, Symbol))
-```
+####Figures showing distributions of gene counts
 
 ```{r Making Boxplot showing distributions of gene counts}
 
@@ -119,6 +134,7 @@ Ensembl_ID_rownames %>%
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
   mutate(count_distributions = as.numeric(count_distributions)) %>% 
+
   
 ggplot(., aes(x= Samples, y=count_distributions))+
     geom_boxplot()+
@@ -155,21 +171,6 @@ ggplot(better_genecount_boxplot, aes(x = Condition, y = count_distributions + 1)
         strip.text.y = element_text(color = "white"))
 ```
 
-```{r Converting the Continuous Counts values to Log2 CPM values}
-
-count_matrix <- Ensembl_ID_rownames %>%
-  mutate(across(everything(), as.numeric)) %>%
-  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
-
-log2_cpm <- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
-
-log2_cpm_tbl <- log2_cpm %>% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
-  as.data.frame() %>%
-  rownames_to_column("genes") %>%
-  as_tibble()
-
-```
-
 
 ```{r A Boxplot of Log2 CPM values}
 
@@ -191,14 +192,22 @@ ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
 
 ```
 
+####Histograms showing distributions of log2 CPM RNA counts
 
-```{r All samples Log2CPM distributions put in histogram}
-log2_cpm_tibble <- log2_cpm %>%
+```{r Converting the Log2 cpm matrix into tidy format}
+
+log2_cpm_tbl <- log2_cpm %>%
   as.data.frame() %>%
   rownames_to_column("genes") %>%
   as_tibble()
 
-log2_cpm_histogram <- log2_cpm_tibble %>%
+#head(log2_cpm_tbl)
+
+```
+
+```{r All samples Log2CPM distributions put in histogram}
+
+log2_cpm_histogram <- log2_cpm_tbl %>%
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
 
 ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
@@ -214,7 +223,7 @@ ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
 
 ```
 
-```{r All samples in histogram distinguished by color, eval=FALSE, include=FALSE}
+```{r All samples in histogram distinguished by color}
 
 ggplot(log2_cpm_histogram,
        aes(x = log2cpm,
@@ -249,6 +258,7 @@ ggplot(log2_cpm_histogram,
         strip.text.y = element_text(color = "white"))
 
 ```
+####Filtering out RNA counts where log2 cpm is less than zero
 
 ```{r Filtering out lowly expressed genes where log2cpm is less than zero}
 
@@ -304,4 +314,134 @@ ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
   labs(title = "Log2 CPM Boxplots",y = "log2 CPM")
 ```
 
+####Identifying genes of interest whose RNA counts change across species and/or IFNy treatment
+
+```{r Making a Lookup Table to easily associate Ensembl IDs to Gene Names}
+# here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
+search_table <- counts %>%
+  column_to_rownames(var = "Ensemble") %>% 
+  dplyr::select(Entrez_ID, Symbol) %>% 
+  filter(Symbol == "STAT1")
+
+head(search_table)
+
+# here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
+lookup_table <- counts %>%
+  column_to_rownames(var = "Ensemble") %>% 
+  dplyr::select(Entrez_ID, Symbol) 
+```
+
+```{r Genes of Interest, eval=FALSE, include=FALSE}
+# Genes of interest that show interesting expression changes: VCAM1, MYH7, CXCL10 (control), FGF1, FGF2, CIITA, STAT1, IL1RN, NLRP3, CCL2, TTN, KCNQ1, MAP3K5
+```
+
+
+```{r Showing MyFavGene log2 cpm counts via treatment condition and across species, eval=FALSE, include=FALSE}
+
+#head(log2_cpm_tbl)
+
+MyFavGene_tbl <- log2_cpm_tbl %>% 
+  filter(genes %in% c("ENSG00000183873", "ENSG00000197616", "ENSG00000077522"))
+
+#head(MyFavGene_tbl)
+
+MyFavGene_long <- MyFavGene_tbl %>%
+   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
+
+#head(MyFavGene_long)
+
+MyFavGene_plot <- MyFavGene_long %>%
+  left_join(metadata, by = c("Samples" = "SampleName")) %>%
+  left_join(counts, by = c("genes"  = "Ensemble")) %>% 
+  mutate(Treatment = factor(Treatment, levels = c("VEH", "IFNy")))
+
+#head(MyFavGene_plot)
+
+ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = Individual)) +
+  facet_wrap(vars(genes, Species)) +
+  labs(title = "Genes of Interests' RNA Expressions Across Species and Treatment Conditions",
+       y = "log2 CPM",
+       x = "Treatment") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1)),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r Showing TNNT2 log2 cpm counts via treatment condition and across species, eval=FALSE, include=FALSE}
+
+#head(log2_cpm_tbl)
+
+TNNT2_tbl <- log2_cpm_tbl %>% 
+  filter(genes == "ENSG00000118194")
+
+#head(TNNT2_tbl)
+
+TNNT2_long <- TNNT2_tbl %>%
+   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
+
+#head(TNNT2_long)
+
+TNNT2_plot <- TNNT2_long %>%
+  left_join(metadata, by = c("Samples" = "SampleName")) %>%
+  mutate(Treatment = factor(Treatment, levels = c("VEH", "IFNy")))
+
+#head(TNNT2_plot)
+
+ggplot(TNNT2_plot, aes(x = Treatment, y = log2cpm)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = Individual)) +
+  facet_wrap(~Species) +
+  labs(title = "TNNT2 Expression Across Conditions",
+       y = "log2 CPM",
+       x = "Treatment") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5)),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r Creating a New Function to plot Genes of Interests log2 cpm counts via treatment condition across species}
+plot_my_genes <- function(counts_df, gene_id){
+
+gene_tbl <- counts_df %>% 
+  dplyr::filter(genes == gene_id)
+
+gene_name <- lookup_table %>% 
+  dplyr::filter(rownames(.) == gene_id) %>% 
+  pull(Symbol)
+
+gene_long <- gene_tbl %>%
+   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
+
+gene_plot <- gene_long %>%
+  left_join(metadata, by = c("Samples" = "SampleName")) %>%
+  mutate(Treatment = factor(Treatment, levels = c("VEH", "IFNy")))
+
+ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(color = Individual)) +
+  facet_wrap(~Species) +
+  labs(title = paste0(gene_name, "Expression Across Conditions"),
+       y = "log2 CPM",
+       x = "Treatment") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5)),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+}
+```
+
+```{r eval=FALSE, include=FALSE}
+plot_my_genes(log2_cpm_tbl, "ENSG00000118194")
+```
+
+```{r This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species, fig.width=7, fig.height=5}
+
+#Note that the capitalized X and lowercase X are important, make sure to distinguish between the cases here!
+
+lapply(X = c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"), FUN = function(x) {plot_my_genes(log2_cpm_tbl, x)})
+
+```
 
