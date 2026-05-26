@@ -423,7 +423,7 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
   facet_wrap(~Species) +
-  labs(title = paste0(gene_name, "Expression Across Conditions"),
+  labs(title = paste0(gene_name, " Expression Across Conditions"),
        y = "log2 CPM",
        x = "Treatment") +
   theme_bw() +
