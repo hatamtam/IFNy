@@ -318,12 +318,15 @@ ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
 
 ```{r Making a Lookup Table to easily associate Ensembl IDs to Gene Names}
 # here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
+
+#Remove the hashtag after the filter() command to activate, and remember to put the %>% pathing after line 326. 
+
 search_table <- counts %>%
   column_to_rownames(var = "Ensemble") %>% 
-  dplyr::select(Entrez_ID, Symbol) %>% 
-  filter(Symbol == "STAT1")
+  dplyr::select(Entrez_ID, Symbol) 
+  #filter(Symbol == " ")
 
-head(search_table)
+#head(search_table)
 
 # here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
 lookup_table <- counts %>%
@@ -437,7 +440,7 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
 plot_my_genes(log2_cpm_tbl, "ENSG00000118194")
 ```
 
-```{r This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species, fig.width=7, fig.height=5}
+```{r This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species, fig.height=5, fig.width=7}
 
 #Note that the capitalized X and lowercase X are important, make sure to distinguish between the cases here!
 
