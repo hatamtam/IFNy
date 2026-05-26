@@ -133,7 +133,7 @@ ggplot(., aes(x=Individual, y=avgMapped_Reads))+
 Ensembl_ID_rownames %>% 
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
-  mutate(count_distributions = as.numeric(count_distributions)) %>% 
+  mutate(count_distributions = as.numeric(count_distributions)) %>%
 
   
 ggplot(., aes(x= Samples, y=count_distributions))+
@@ -316,22 +316,17 @@ ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
 
 ####Identifying genes of interest whose RNA counts change across species and/or IFNy treatment
 
-```{r Making a Lookup Table to easily associate Ensembl IDs to Gene Names}
+```{r Making a Search and Lookup Table to easily associate Ensembl IDs to Gene Names}
 # here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
 
 #Remove the hashtag after the filter() command to activate, and remember to put the %>% pathing after line 326. 
 
-search_table <- counts %>%
+lookup_table <- counts %>%
   column_to_rownames(var = "Ensemble") %>% 
   dplyr::select(Entrez_ID, Symbol) 
   #filter(Symbol == " ")
 
-#head(search_table)
-
-# here I am pulling only the Entrez_ID and Symbol attributes to look up any gene name and its associated Ensembl ID. This table will be used in a function below to assign gene symbol names to their respective Ensemble IDs
-lookup_table <- counts %>%
-  column_to_rownames(var = "Ensemble") %>% 
-  dplyr::select(Entrez_ID, Symbol) 
+#head(lookup_table)
 ```
 
 ```{r Genes of Interest, eval=FALSE, include=FALSE}
@@ -339,12 +334,18 @@ lookup_table <- counts %>%
 ```
 
 
-```{r Showing MyFavGene log2 cpm counts via treatment condition and across species, eval=FALSE, include=FALSE}
+```{r Showing MyFavGene log2 cpm counts via treatment condition and across species}
+
+# 
+# Ensembl_ID_rownames %>% 
+#   rownames_to_column("genes") %>% 
+#   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
+#   mutate(count_distributions = as.numeric(count_distributions)) %>% 
 
 #head(log2_cpm_tbl)
 
 MyFavGene_tbl <- log2_cpm_tbl %>% 
-  filter(genes %in% c("ENSG00000183873", "ENSG00000197616", "ENSG00000077522"))
+  filter(genes %in% c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"))
 
 #head(MyFavGene_tbl)
 
@@ -355,15 +356,19 @@ MyFavGene_long <- MyFavGene_tbl %>%
 
 MyFavGene_plot <- MyFavGene_long %>%
   left_join(metadata, by = c("Samples" = "SampleName")) %>%
-  left_join(counts, by = c("genes"  = "Ensemble")) %>% 
+  left_join(lookup_table %>%
+              rownames_to_column("genes") %>% 
+              select(genes, Symbol),
+            by = "genes") %>% 
   mutate(Treatment = factor(Treatment, levels = c("VEH", "IFNy")))
+
 
 #head(MyFavGene_plot)
 
 ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
-  facet_wrap(vars(genes, Species)) +
+  facet_wrap(vars(Species, Symbol), nrow=2, ncol=6) +
   labs(title = "Genes of Interests' RNA Expressions Across Species and Treatment Conditions",
        y = "log2 CPM",
        x = "Treatment") +
