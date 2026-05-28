@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreec53361f3a338edc9c284b28444e07f4f66f3dda0targetblankc53361fa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree89e05d92f98ae12ab7628d4dd4db457c2b1c0c73targetblank89e05d9a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/c53361f3a338edc9c284b28444e07f4f66f3dda0" target="_blank">c53361f</a>
+<a href="https://github.com/hatamtam/IFNy/tree/89e05d92f98ae12ab7628d4dd4db457c2b1c0c73" target="_blank">89e05d9</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreec53361f3a338edc9c284b28444e07f4f66f3dda0targetblankc53361fa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree89e05d92f98ae12ab7628d4dd4db457c2b1c0c73targetblank89e05d9a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/c53361f3a338edc9c284b28444e07f4f66f3dda0" target="_blank">c53361f</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/89e05d92f98ae12ab7628d4dd4db457c2b1c0c73" target="_blank">89e05d9</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -611,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/89e05d92f98ae12ab7628d4dd4db457c2b1c0c73/analysis/IFNy_Metadata.Rmd" target="_blank">89e05d9</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+<td>
+wflow_publish("analysis/IFNy_Metadata.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/IFNy_Metadata.html" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1159,7 +1193,10 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<p>####Figures showing distributions of gene counts</p>
+</div>
+<div id="figures-showing-distributions-of-gene-counts"
+class="section level4">
+<h4>Figures showing distributions of gene counts</h4>
 <pre class="r"><code># The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
 Ensembl_ID_rownames %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
@@ -1327,7 +1364,10 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<p>####Histograms showing distributions of log2 CPM RNA counts</p>
+</div>
+<div id="histograms-showing-distributions-of-log2-cpm-rna-counts"
+class="section level4">
+<h4>Histograms showing distributions of log2 CPM RNA counts</h4>
 <pre class="r"><code>log2_cpm_tbl &lt;- log2_cpm %&gt;%
   as.data.frame() %&gt;%
   rownames_to_column(&quot;genes&quot;) %&gt;%
@@ -1517,7 +1557,10 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<p>####Filtering out RNA counts where log2 cpm is less than zero</p>
+</div>
+<div id="filtering-out-rna-counts-where-log2-cpm-is-less-than-zero"
+class="section level4">
+<h4>Filtering out RNA counts where log2 cpm is less than zero</h4>
 <pre class="r"><code>gene_means &lt;- rowMeans(log2_cpm)
   filtered_log2_cpm &lt;- log2_cpm[gene_means &gt; 0, ]
   # this code output the number of rows, i.e: the number of genes where log2 &gt; 0
@@ -1739,8 +1782,12 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<p>####Identifying genes of interest whose RNA counts change across
-species and/or IFNy treatment</p>
+</div>
+<div
+id="identifying-genes-of-interest-whose-rna-counts-change-across-species-andor-ifny-treatment"
+class="section level4">
+<h4>Identifying genes of interest whose RNA counts change across species
+and/or IFNy treatment</h4>
 <pre class="r"><code># here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
 
 #Remove the hashtag after the filter() command to activate, and remember to put the %&gt;% pathing after line 326. 
@@ -1820,6 +1867,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/Showing MyFavGene log2 cpm counts via treatment condition and across species-1.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/9cc9b6a3c4f7d4471c7b98eb8b4ec925d4e8f2a7/docs/figure/IFNy_Metadata.Rmd/Showing MyFavGene log2 cpm counts via treatment condition and across species-1.png" target="_blank">9cc9b6a</a>
 </td>
 <td>
@@ -1895,6 +1953,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-1.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-1.png" target="_blank">cbe45d3</a>
 </td>
 <td>
@@ -1948,6 +2017,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-2.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-2.png" target="_blank">cbe45d3</a>
@@ -2005,6 +2085,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-3.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-3.png" target="_blank">cbe45d3</a>
 </td>
 <td>
@@ -2058,6 +2149,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-4.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-4.png" target="_blank">cbe45d3</a>
@@ -2115,6 +2217,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-5.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-5.png" target="_blank">cbe45d3</a>
 </td>
 <td>
@@ -2170,6 +2283,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-6.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/cbe45d31b8fe395cc40dec6aae63b83522ebb02e/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-6.png" target="_blank">cbe45d3</a>
 </td>
 <td>
@@ -2194,8 +2318,12 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<p>####Creating Scatter plots to determine log2 cpm gene count
-similarities across the individuals, treatments, and species</p>
+</div>
+<div
+id="creating-scatter-plots-to-determine-log2-cpm-gene-count-similarities-across-the-individuals-treatments-and-species"
+class="section level4">
+<h4>Creating Scatter plots to determine log2 cpm gene count similarities
+across the individuals, treatments, and species</h4>
 <pre class="r"><code>scatter_function &lt;- function(log2_filtered_df, condition_name){
   
 after_filter_with_metadata &lt;- log2_filtered_df %&gt;%
@@ -2213,15 +2341,175 @@ wide_scatter &lt;-after_filter_with_metadata %&gt;%
 <pre class="r"><code>lapply(X = c(&quot;C_VEH_C2R&quot;, &quot;C_VEH_C3&quot;, &quot;C_IFNy_C2&quot;, &quot;H_VEH_H2&quot;), FUN = function(x) {scatter_function(after_tbl, x)})</code></pre>
 <pre><code>[[1]]</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20code%20calls%20the%20scatter_function%20from%20above%20and%20applies%20a%20list%20that%20I%20have%20provided%20below-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-1">
+Past versions of "This code calls the scatter_function from above and
+applies a list that I have provided below-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-1.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[2]]</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20code%20calls%20the%20scatter_function%20from%20above%20and%20applies%20a%20list%20that%20I%20have%20provided%20below-2.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-2">
+Past versions of "This code calls the scatter_function from above and
+applies a list that I have provided below-2.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-2"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-2.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[3]]</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20code%20calls%20the%20scatter_function%20from%20above%20and%20applies%20a%20list%20that%20I%20have%20provided%20below-3.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-3">
+Past versions of "This code calls the scatter_function from above and
+applies a list that I have provided below-3.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-3"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-3.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>
 [[4]]</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20code%20calls%20the%20scatter_function%20from%20above%20and%20applies%20a%20list%20that%20I%20have%20provided%20below-4.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-4">
+Past versions of "This code calls the scatter_function from above and
+applies a list that I have provided below-4.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-This-code-calls-the-scatter_function-from-above-and-applies-a-list-that-I-have-provided-below-4"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-4.png" target="_blank">9adc48d</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-05-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
