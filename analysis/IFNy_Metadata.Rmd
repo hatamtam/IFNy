@@ -128,7 +128,7 @@ ggplot(., aes(x=Individual, y=avgMapped_Reads))+
         strip.text.y = element_text(color = "white"))
 
 ```
-####Figures showing distributions of gene counts
+#### Figures showing distributions of gene counts
 
 ```{r Making Boxplot showing distributions of gene counts}
 
@@ -195,7 +195,7 @@ ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
 
 ```
 
-####Histograms showing distributions of log2 CPM RNA counts
+#### Histograms showing distributions of log2 CPM RNA counts
 
 ```{r Converting the Log2 cpm matrix into tidy format}
 
@@ -261,7 +261,7 @@ ggplot(log2_cpm_histogram,
         strip.text.y = element_text(color = "white"))
 
 ```
-####Filtering out RNA counts where log2 cpm is less than zero
+#### Filtering out RNA counts where log2 cpm is less than zero
 
 ```{r Filtering out lowly expressed genes where log2cpm is less than zero}
 
@@ -319,7 +319,7 @@ ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
   labs(title = "Log2 CPM Boxplots",y = "log2 CPM")
 ```
 
-####Identifying genes of interest whose RNA counts change across species and/or IFNy treatment
+#### Identifying genes of interest whose RNA counts change across species and/or IFNy treatment
 
 ```{r Making a Search and Lookup Table to easily associate Ensembl IDs to Gene Names}
 # here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
@@ -462,7 +462,7 @@ lapply(X = c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000
 
 ```
 
-####Creating Scatter plots to determine log2 cpm gene count similarities across the individuals, treatments, and species
+#### Creating Scatter plots to determine log2 cpm gene count similarities across the individuals, treatments, and species
 
 ```{r Scatter plot to compare sample similarities under species and treatment categories}
 
