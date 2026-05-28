@@ -33,6 +33,9 @@ library(dplyr)
 library(tibble)
 library(scales)
 library(edgeR)
+library(smplot2)
+library(ggpubr)
+library(workflowr)
 ```
 
 
@@ -282,6 +285,8 @@ gene_means <- rowMeans(log2_cpm)
   rownames_to_column("genes") %>%
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm") %>%
   mutate(Filter = "After")
+  
+head(after_tbl)
 
 # This combines the before and after tables to visualize the original and filtered cpm frequency values 
 combined_tbl <- bind_rows(before_tbl, after_tbl)
@@ -368,7 +373,9 @@ MyFavGene_plot <- MyFavGene_long %>%
 ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
-  facet_wrap(vars(Species, Symbol), nrow=2, ncol=6) +
+  coord_cartesian(ylim = c(-5, 15)) +
+  stat_compare_means(method = "t.test", paired = TRUE, size = 2.25, label.x = 1, label.y = 14) +
+  facet_wrap(Species ~ Symbol, nrow=2, ncol=6) +
   labs(title = "Genes of Interests' RNA Expressions Across Species and Treatment Conditions",
        y = "log2 CPM",
        x = "Treatment") +
@@ -401,6 +408,7 @@ TNNT2_plot <- TNNT2_long %>%
 ggplot(TNNT2_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
+  stat_compare_means(method = "t.test", paired = TRUE) +
   facet_wrap(~Species) +
   labs(title = "TNNT2 Expression Across Conditions",
        y = "log2 CPM",
@@ -430,6 +438,8 @@ gene_plot <- gene_long %>%
 ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
+  scale_y_continuous(limits = c(-5, 15),breaks = seq(-5, 15, by = 5)) +
+  stat_compare_means(method = "t.test", paired = TRUE, size = 4, label.x = 1.25, label.y = 14) +
   facet_wrap(~Species) +
   labs(title = paste0(gene_name, " Expression Across Conditions"),
        y = "log2 CPM",
@@ -437,7 +447,6 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5, size = rel(1.5)),
         axis.text.x = element_text(angle = 45, hjust = 1))
-
 }
 ```
 
@@ -452,4 +461,29 @@ plot_my_genes(log2_cpm_tbl, "ENSG00000118194")
 lapply(X = c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"), FUN = function(x) {plot_my_genes(log2_cpm_tbl, x)})
 
 ```
+
+####Creating Scatter plots to determine log2 cpm gene count similarities across the individuals, treatments, and species
+
+```{r Scatter plot to compare sample similarities under species and treatment categories}
+
+scatter_function <- function(log2_filtered_df, condition_name){
+  
+after_filter_with_metadata <- log2_filtered_df %>%
+  left_join(metadata, by = c("Samples" = "SampleName")) %>%  
+  dplyr::select(genes, log2cpm, Condition) %>% 
+  dplyr::filter(Condition %in% c("C_VEH_C2", condition_name))
+
+wide_scatter <-after_filter_with_metadata %>%
+  pivot_wider(names_from = Condition, values_from = log2cpm) %>% 
+  ggplot(., aes(x = C_VEH_C2, y = .data[[condition_name]])) +
+  geom_point() +
+  stat_cor(method = "pearson") +
+  theme_classic()
+}
+```
+
+```{r This code calls the scatter_function from above and applies a list that I have provided below, fig.height=5, fig.width=7}
+lapply(X = c("C_VEH_C2R", "C_VEH_C3", "C_IFNy_C2", "H_VEH_H2"), FUN = function(x) {scatter_function(after_tbl, x)})
+```
+
 
