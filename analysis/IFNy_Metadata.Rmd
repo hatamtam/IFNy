@@ -36,6 +36,7 @@ library(edgeR)
 library(smplot2)
 library(ggpubr)
 library(workflowr)
+library(ComplexHeatmap)
 ```
 
 
@@ -181,6 +182,8 @@ better_log2cpm_boxplot <- log2_cpm_tbl %>%
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm_values") %>% 
   mutate(log2cpm_values = as.numeric(log2cpm_values)) %>% 
   left_join(metadata, by = c("Samples" = "SampleName"))
+
+#head(better_log2cpm_boxplot)
 
 ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
   geom_boxplot() +
@@ -341,23 +344,17 @@ lookup_table <- counts %>%
 
 ```{r Showing MyFavGene log2 cpm counts via treatment condition and across species}
 
-# 
-# Ensembl_ID_rownames %>% 
-#   rownames_to_column("genes") %>% 
-#   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
-#   mutate(count_distributions = as.numeric(count_distributions)) %>% 
-
 #head(log2_cpm_tbl)
 
 MyFavGene_tbl <- log2_cpm_tbl %>% 
   filter(genes %in% c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"))
 
-#head(MyFavGene_tbl)
+head(MyFavGene_tbl)
 
 MyFavGene_long <- MyFavGene_tbl %>%
    pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
 
-#head(MyFavGene_long)
+head(MyFavGene_long)
 
 MyFavGene_plot <- MyFavGene_long %>%
   left_join(metadata, by = c("Samples" = "SampleName")) %>%
@@ -368,7 +365,7 @@ MyFavGene_plot <- MyFavGene_long %>%
   mutate(Treatment = factor(Treatment, levels = c("VEH", "IFNy")))
 
 
-#head(MyFavGene_plot)
+head(MyFavGene_plot)
 
 ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
@@ -450,9 +447,6 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
 }
 ```
 
-```{r eval=FALSE, include=FALSE}
-plot_my_genes(log2_cpm_tbl, "ENSG00000118194")
-```
 
 ```{r This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species, fig.height=5, fig.width=7}
 
@@ -486,4 +480,54 @@ wide_scatter <-after_filter_with_metadata %>%
 lapply(X = c("C_VEH_C2R", "C_VEH_C3", "C_IFNy_C2", "H_VEH_H2"), FUN = function(x) {scatter_function(after_tbl, x)})
 ```
 
+```{r}
+spearman_matrix <- after_tbl %>% 
+  left_join(metadata, by = c("Samples" = "SampleName")) %>% 
+  select(genes, log2cpm, Condition) %>% 
+  pivot_wider(names_from = Condition, values_from = log2cpm) %>% 
+  column_to_rownames(var = "genes")
+head(spearman_matrix)
+
+# better_genecount_boxplot <- Ensembl_ID_rownames %>% 
+#   rownames_to_column("genes") %>% 
+#   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
+#   mutate(count_distributions = as.numeric(count_distributions)) %>% 
+#   left_join(metadata, by = c("Samples" = "SampleName"))
+```
+
+
+```{r This is code to make a heatmap of log2 cpm counts for each sample}
+
+# attribute_labels_df <- metadata %>% 
+#   select(Species, Individual, Treatment, Condition) %>% 
+#   column_to_rownames(var = "Condition")
+#   as.tibble()
+# head(attribute_labels_df)
+
+# label_colors <- list( 
+#    Species= c("#F1B72B","#8B006D","#DF707E"),
+#    Individual=c("#1B9E77", "#D95F02" ,"#7570B3", "#E7298A" ,"#66A61E", "#E6AB02","#6F659A", "#9A6576", "#909A65", "#659A89", "#D3AEE0", "#AEE0BA" ),
+#    Treatment=c("pink", "chocolate4"))
+# 
+# names(label_colors$Species)   <- unique(attribute_labels_df$Species)                      
+# names(label_colors$Individual) <- unique(attribute_labels_df$Individual)
+# names(label_colors$Treatment) <- unique(attribute_labels_df$Treatment)
+
+
+
+#Heatmap(spearman_matrix, name = "Spearman Correlations", cluster_rows = FALSE, 
+ #   column_title = NULL)
+
+
+
+spearman_cor <- cor(
+  spearman_matrix,
+  method = "spearman"
+)
+
+Heatmap(
+  spearman_cor, name = "Correlation Gradient"
+)
+
+```
 
