@@ -37,6 +37,7 @@ library(smplot2)
 library(ggpubr)
 library(workflowr)
 library(ComplexHeatmap)
+library(RColorBrewer)
 ```
 
 
@@ -111,24 +112,6 @@ ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
 
 ```
 
-```{r Average mapped read counts between each individual in a column plot}
-
-metadata %>% 
-  group_by(Individual) %>% 
-  summarise(avgMapped_Reads=mean(Mapped_Reads)) %>% 
-ggplot(., aes(x=Individual, y=avgMapped_Reads))+
-  geom_col(aes(fill=Individual))+
-  geom_point()+
-  labs(title = "Mapped RNA_Sequencing reads between individuals",y="Mapped read count", x="Individual" )+
-  theme_bw()+
-  theme(plot.title = element_text(size = rel(1.5), hjust = 0.5),
-        axis.title = element_text(size = 15, color = "black"),
-        axis.ticks = element_line(linewidth = 1.5),
-        axis.text.y = element_text(size =10, color = "black", angle = 0, hjust = 0.8, vjust = 0.5),
-        axis.text.x = element_text(size =10, color = "black", angle = 90, hjust = 1, vjust = 0.2),
-        strip.text.y = element_text(color = "white"))
-
-```
 #### Figures showing distributions of gene counts
 
 ```{r Making Boxplot showing distributions of gene counts}
@@ -270,7 +253,7 @@ ggplot(log2_cpm_histogram,
 
 gene_means <- rowMeans(log2_cpm)
   filtered_log2_cpm <- log2_cpm[gene_means > 0, ]
-  # this code output the number of rows, i.e: the number of genes where log2 > 0
+  # this code output the number of rows, i.e: the number of genes where log2  0
   #nrow(filtered_log2_cpm)
   # this code outputs the difference between rows of the df log2_cpm, unfiltered from the rows of the df filtered_log2_cpm, which is the number of genes that were removed from filtering, as in the number of genes removed where log2 cpm < 0
   #nrow(log2_cpm) - nrow(filtered_log2_cpm)
@@ -371,7 +354,6 @@ ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
   coord_cartesian(ylim = c(-5, 15)) +
-  stat_compare_means(method = "t.test", paired = TRUE, size = 2.25, label.x = 1, label.y = 14) +
   facet_wrap(Species ~ Symbol, nrow=2, ncol=6) +
   labs(title = "Genes of Interests' RNA Expressions Across Species and Treatment Conditions",
        y = "log2 CPM",
@@ -415,6 +397,8 @@ ggplot(TNNT2_plot, aes(x = Treatment, y = log2cpm)) +
         axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
+
 ```{r Creating a New Function to plot Genes of Interests log2 cpm counts via treatment condition across species}
 plot_my_genes <- function(counts_df, gene_id){
 
@@ -436,7 +420,6 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
   geom_boxplot(outlier.shape = NA) +
   geom_point(aes(color = Individual)) +
   scale_y_continuous(limits = c(-5, 15),breaks = seq(-5, 15, by = 5)) +
-  stat_compare_means(method = "t.test", paired = TRUE, size = 4, label.x = 1.25, label.y = 14) +
   facet_wrap(~Species) +
   labs(title = paste0(gene_name, " Expression Across Conditions"),
        y = "log2 CPM",
@@ -487,47 +470,141 @@ spearman_matrix <- after_tbl %>%
   pivot_wider(names_from = Condition, values_from = log2cpm) %>% 
   column_to_rownames(var = "genes")
 head(spearman_matrix)
-
-# better_genecount_boxplot <- Ensembl_ID_rownames %>% 
-#   rownames_to_column("genes") %>% 
-#   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
-#   mutate(count_distributions = as.numeric(count_distributions)) %>% 
-#   left_join(metadata, by = c("Samples" = "SampleName"))
 ```
 
 
-```{r This is code to make a heatmap of log2 cpm counts for each sample}
+```{r This is code to make a heatmap of log2 cpm counts for each sample, fig.width=7, fig.height=8}
 
-# attribute_labels_df <- metadata %>% 
-#   select(Species, Individual, Treatment, Condition) %>% 
-#   column_to_rownames(var = "Condition")
-#   as.tibble()
-# head(attribute_labels_df)
+attribute_labels_df <- metadata %>%
+   select(Sex, Species, Individual, Treatment, Condition) %>%
+   column_to_rownames(var = "Condition") %>% 
+   as.tibble()
+#head(attribute_labels_df)
+ 
+ spearman_cor <- cor(
+   spearman_matrix,
+   method = "spearman"
+ )
+ 
+ individual_colors <- structure(
+   brewer.pal(12, "Set3"),
+   names = unique(attribute_labels_df$Individual)
+ )
+ 
+ 
+ hmp_anno <- HeatmapAnnotation(
+   Species = attribute_labels_df$Species,
+   Sex = attribute_labels_df$Sex,
+   Treatment = attribute_labels_df$Treatment,
+   Individual = attribute_labels_df$Individual,
+   col = list(
+     Species = c(
+       C = "#F1B72B",
+       H = "#8B006D"
+     ),
+     Sex = c(
+       M = "#3C042F",
+       F = "#DF707E"
+     ),
+     Treatment = c(
+       VEH = "pink",
+       IFNy = "chocolate4"
+     ),
+     Individual = individual_colors
+     ),
+   annotation_name_gp = grid::gpar(
+    fontsize = 8,
+    fontface = "bold"
+   )
+ )
+ 
+ Heatmap(
+   spearman_cor,
+   name = "Correlation Gradient",
+   width = unit(8, "cm"),
+   height = unit(8, "cm"),
+   row_names_gp = gpar(fontsize = 8), 
+   column_names_gp = gpar(fontsize = 8), 
+   top_annotation = hmp_anno
+ )
 
-# label_colors <- list( 
-#    Species= c("#F1B72B","#8B006D","#DF707E"),
-#    Individual=c("#1B9E77", "#D95F02" ,"#7570B3", "#E7298A" ,"#66A61E", "#E6AB02","#6F659A", "#9A6576", "#909A65", "#659A89", "#D3AEE0", "#AEE0BA" ),
-#    Treatment=c("pink", "chocolate4"))
-# 
-# names(label_colors$Species)   <- unique(attribute_labels_df$Species)                      
-# names(label_colors$Individual) <- unique(attribute_labels_df$Individual)
-# names(label_colors$Treatment) <- unique(attribute_labels_df$Treatment)
+```
 
 
+```{r This code is creating PCA plots to determine factors of variance in samples, eval=FALSE, include=FALSE}
+pca_matrix <- t(spearman_matrix)
 
-#Heatmap(spearman_matrix, name = "Spearman Correlations", cluster_rows = FALSE, 
- #   column_title = NULL)
+pca_plotting <- prcomp(pca_matrix,
+                     scale. = TRUE,
+                     retx = TRUE
+                     )
 
+#summary(pca_plotting)
 
+pca_variance <- (
+  pca_plotting$sdev^2 /
+  sum(pca_plotting$sdev^2)
+  )*100
 
-spearman_cor <- cor(
-  spearman_matrix,
-  method = "spearman"
+pca_df <- data.frame(
+  Component = 1:length(pca_plotting$sdev),
+  Variance = pca_variance
 )
 
-Heatmap(
-  spearman_cor, name = "Correlation Gradient"
+#head(pca_df)
+#class(pca_df)
+
+ggplot(pca_df, aes(x = Component , y = Variance)) +
+  geom_bar(stat = "identity", fill = "maroon") +
+  geom_line() +
+  geom_point() +
+  xlab("Principal Components") +
+  ylab("Proportion of Variances") +
+  ggtitle(" Analsysis of Components Contributing to Variance") +
+  theme_bw()
+
+
+pca_analysis <- as.data.frame(
+  pca_plotting$x
 )
+
+#head(pca_analysis)
+
+pca_analysis$Samples <- rownames(pca_analysis)
+
+pca_analysis <- pca_analysis %>%
+  
+  left_join(
+    metadata,
+    by = c("Samples" = "Condition")
+  )
+
+head(pca_analysis)
+
+ggplot(
+  pca_analysis,
+  aes(
+    x = PC1,
+    y = PC2,
+    color = Species,
+    shape = Treatment
+  )
+) +
+  geom_point(size = 4) +
+  labs(
+    title = "PCA of RNA-seq Samples",
+    x = paste0(
+      "PC1: ",
+      round(pca_variance[1], 1),
+      "% variance"
+    ),
+    y = paste0(
+      "PC2: ",
+      round(pca_variance[2], 1),
+      "% variance"
+    )
+  ) +
+  theme_classic()
 
 ```
 
