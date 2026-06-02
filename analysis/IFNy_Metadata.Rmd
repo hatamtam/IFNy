@@ -38,6 +38,7 @@ library(ggpubr)
 library(workflowr)
 library(ComplexHeatmap)
 library(RColorBrewer)
+library(gridExtra)
 ```
 
 
@@ -531,7 +532,7 @@ attribute_labels_df <- metadata %>%
 ```
 
 
-```{r This code is creating PCA plots to determine factors of variance in samples, eval=FALSE, include=FALSE}
+```{r This code is creating PCA plots to determine factors of variance in samples}
 pca_matrix <- t(spearman_matrix)
 
 pca_plotting <- prcomp(pca_matrix,
@@ -539,22 +540,34 @@ pca_plotting <- prcomp(pca_matrix,
                      retx = TRUE
                      )
 
-#summary(pca_plotting)
+
+pca_df <- as.data.frame(pca_plotting$x)
+
+#head(pca_df)
 
 pca_variance <- (
   pca_plotting$sdev^2 /
   sum(pca_plotting$sdev^2)
   )*100
 
-pca_df <- data.frame(
+pca_analysis <- data.frame(
   Component = 1:length(pca_plotting$sdev),
   Variance = pca_variance
 )
 
-#head(pca_df)
-#class(pca_df)
+#head(pca_analysis)
 
-ggplot(pca_df, aes(x = Component , y = Variance)) +
+pca_analysis$Samples <- rownames(pca_df)
+
+pca_anno <- pca_df %>%
+  rownames_to_column("Samples") %>% 
+  left_join(metadata,
+    by = c("Samples" = "Condition")
+    )
+
+#head(pca_anno)
+
+ggplot(pca_analysis, aes(x = Component , y = Variance)) +
   geom_bar(stat = "identity", fill = "maroon") +
   geom_line() +
   geom_point() +
@@ -564,28 +577,131 @@ ggplot(pca_df, aes(x = Component , y = Variance)) +
   theme_bw()
 
 
-pca_analysis <- as.data.frame(
-  pca_plotting$x
-)
+```
 
-#head(pca_analysis)
+```{r This chunk of code is my attempt to make a function that will plot the PCA plots I am interested with in one go, eval=FALSE, include=FALSE}
 
-pca_analysis$Samples <- rownames(pca_analysis)
-
-pca_analysis <- pca_analysis %>%
+pca_plot_new <- function(df, pc_x = 1, pc_y = 2, col_var, shape_var, pca_plotting, title = "") {
   
-  left_join(
-    metadata,
-    by = c("Samples" = "Condition")
-  )
+  # variance explained
+  pca_variance <- (pca_plotting$sdev^2 / sum(pca_plotting$sdev^2))*100
+  
+  # axis labels
+  x_lab <- sprintf("PC%d (%.1f%%)", pc_x, pca_variance[pc_x] * 100)
+  y_lab <- sprintf("PC%d (%.1f%%)", pc_y, pca_variance[pc_y] * 100)
+  
+  ggplot(df, aes(x = .data[[paste0("PC", pc_x)]], 
+                 y = .data[[paste0("PC", pc_y)]], 
+                 color = !!sym(col_var), 
+                 shape = !!sym(shape_var))) +
+    geom_point(size = 5) +
+    labs(title = title, x = x_lab, y = y_lab) +
+    scale_color_manual(values = c(
+      "#8B006D","#DF707E","#F1B72B",
+      "#3386DD","#707031","#41B333"
+    ))
+}
 
-head(pca_analysis)
+pca_plot <-
+  function(pca_df, col_var = NULL, shape_var = NULL, title = "") {
+    ggplot(df) + geom_point(aes(
+      x = PC1,
+      y = PC2,
+      color = col_var,
+      shape = shape_var
+    ),
+    size = 5) +
+      labs(title = title, x = "PC 1", y = "PC 2") +
+      scale_color_manual(values = c(
+        "#8B006D",
+        "#DF707E",
+        "#F1B72B",
+        "#3386DD",
+        "#707031",
+        "#41B333"
+      ))
+  }
+
+get_regr_pval <- function(model) {
+  # Returns the p-value for the F statistic of a linear model
+  # mod: class lm
+  stopifnot(inherits(model, "lm"))
+  fstat <- summary(model)$fstatistic
+  pval <- 1 - pf(fstat[1], fstat[2], fstat[3])
+  return(pval)
+}
+
+plot_versus_pc <- function(pca_anno, pc_num, facs) {
+  # df: data.frame
+  # pc_num: numeric, specific PC for plotting
+  # facs: column name of df for plotting against PC
+  pc_char <- paste0("PC", pc_num)
+  # Calculate F-statistic p-value for linear model
+  
+  form <- as.formula(paste(pc_char, "~", facs))
+  model <- lm(form, data = pca_anno)
+
+  pval <- get_regr_pval(model)
+
+  if (is.numeric(pca_anno[[facs]])) {
+    ggplot(pca_anno, aes_string(x = facs, y = pc_char)) +
+      geom_point() +
+      geom_smooth(method = "lm") +
+      labs(title = sprintf("p-val: %.3g", pval))
+  }
+  else {
+    ggplot(pca_anno, aes_string(x = facs, y = pc_char)) +
+      geom_boxplot() +
+      labs(title = sprintf("p-val: %.3g", pval))
+  }
+}
+
+# sapply(c("species", "tx", "ind", "sex"), function(x) {
+#   length(unique(na.omit(pca_charts[[x]])))
+# })
+
+```
+
+```{r Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest, eval=FALSE, fig.height=8, fig.width=7, include=FALSE}
+
+pca_charts <- pca_anno %>% 
+#  as.data.frame() %>% 
+#  rownames_to_column("sample") %>% 
+  separate(Samples, into = c("species","tx","ind")) %>%
+  mutate(tx=factor(tx, levels = c("VEH", "IFNy"))) %>% 
+#         ind=factor(time, levels =c("24T","24R","144R"))) %>%
+#  mutate(txtime = paste0(tx, "_", time)) %>% 
+#  mutate(sex=if_else(ind %in% c("Ind1","Ind2"),"F","M"))%>% 
+  mutate(sex=factor(Sex, levels=c("F","M")))
+
+facs <- c("species", "tx", "ind", "sex")
+names(facs) <- c("Species", "Treatment", "Individual","Sex")
+
+plots_of_pcas <- lapply(names(facs), function(f_label) {
+  f <- facs[f_label]
+  f_v_pc1 <- plot_versus_pc(pca_charts, 1, f)
+  f_v_pc2 <- plot_versus_pc(pca_charts, 2, f)
+  f_v_pc3 <- plot_versus_pc(pca_charts, 3, f)
+  f_v_pc4 <- plot_versus_pc(pca_charts, 4, f)
+  f_v_pc5 <- plot_versus_pc(pca_charts, 5, f)
+  f_v_pc6 <- plot_versus_pc(pca_charts, 6, f)
+  f_v_pc7 <- plot_versus_pc(pca_charts, 7, f)
+  f_v_pc8 <- plot_versus_pc(pca_charts, 8, f)
+
+  grid.arrange(f_v_pc1, f_v_pc2, f_v_pc3, f_v_pc4, f_v_pc5, f_v_pc6, f_v_pc7, f_v_pc8, ncol = 2, top = paste0(f_label," PCA Analyses"))
+})
+
+#Significant PCs for factors: species, pc1; treatment, pc4, pc5; individual, pc 1,2,3,6,7,8; sex, pc1, pc5
+
+```
+
+```{r This chunk of code is my attempt at creating PCA plots to illustrate which factors contribute to varience between samples, eval=FALSE, include=FALSE}
 
 ggplot(
-  pca_analysis,
+  pca_anno,
   aes(
     x = PC1,
-    y = PC2,
+    y = PC4,
     color = Species,
     shape = Treatment
   )
@@ -599,8 +715,8 @@ ggplot(
       "% variance"
     ),
     y = paste0(
-      "PC2: ",
-      round(pca_variance[2], 1),
+      "PC4: ",
+      round(pca_variance[4], 1),
       "% variance"
     )
   ) +
