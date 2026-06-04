@@ -11,7 +11,7 @@
 
 <meta name="author" content="Harsha Tamtam" />
 
-<meta name="date" content="2026-06-02" />
+<meta name="date" content="2026-06-04" />
 
 <title>IFNy_Metadata</title>
 
@@ -361,7 +361,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">IFNy_Metadata</h1>
 <h4 class="author">Harsha Tamtam</h4>
-<h4 class="date">2026-06-02</h4>
+<h4 class="date">2026-06-04</h4>
 
 </div>
 
@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-06-02
+<strong>Last updated:</strong> 2026-06-04
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree946450156a7c0466e9c41b110169bf67db888ce1targetblank9464501a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree911c514c5af21f6c732c83bfcc7bbfa59988fe53targetblank911c514a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/946450156a7c0466e9c41b110169bf67db888ce1" target="_blank">9464501</a>
+<a href="https://github.com/hatamtam/IFNy/tree/911c514c5af21f6c732c83bfcc7bbfa59988fe53" target="_blank">911c514</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree946450156a7c0466e9c41b110169bf67db888ce1targetblank9464501a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree911c514c5af21f6c732c83bfcc7bbfa59988fe53targetblank911c514a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/946450156a7c0466e9c41b110169bf67db888ce1" target="_blank">9464501</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/911c514c5af21f6c732c83bfcc7bbfa59988fe53" target="_blank">911c514</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -556,7 +556,6 @@ were generated:
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    analysis/figure/
 
 Untracked files:
     Untracked:  Average_Mapped_Reads.png
@@ -612,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/911c514c5af21f6c732c83bfcc7bbfa59988fe53/analysis/IFNy_Metadata.Rmd" target="_blank">911c514</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+<td>
+wflow_publish("analysis/IFNy_Metadata.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/d3046201241752001b7f176d6cbc20667888e11e/docs/IFNy_Metadata.html" target="_blank">d304620</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-02
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1161,7 +1194,8 @@ library(ggpubr)
 library(workflowr)
 library(ComplexHeatmap)
 library(RColorBrewer)
-library(gridExtra)</code></pre>
+library(gridExtra)
+library(ggrepel)</code></pre>
 </div>
 <div id="viewing-and-manipulating-dataframes" class="section level3">
 <h3>Viewing and Manipulating Dataframes</h3>
@@ -1177,17 +1211,15 @@ metadata &lt;- readRDS(&quot;data/metadata_IFNy.RDS&quot;)
 counts &lt;- readRDS(&quot;data/counts_IFNy.RDS&quot;)
 
 # The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
-Ensembl_ID_rownames &lt;- counts %&gt;%
+Ensembl_df &lt;- counts %&gt;%
   column_to_rownames(var = &quot;Ensemble&quot;) %&gt;% 
   dplyr::select(-c(Entrez_ID, Symbol))</code></pre>
-<pre class="r"><code>count_matrix &lt;- Ensembl_ID_rownames %&gt;%
+<pre class="r"><code>Ensembl_matrix &lt;- Ensembl_df %&gt;%
   mutate(across(everything(), as.numeric)) %&gt;%
-  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
+  as.matrix()
 
-log2_cpm &lt;- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
-
-log2_cpm_tbl &lt;- log2_cpm %&gt;% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
-  as.data.frame() %&gt;%
+log2_cpm &lt;- cpm(Ensembl_matrix, log = TRUE) %&gt;% 
+  as.data.frame() %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;%
   as_tibble()</code></pre>
 </div>
@@ -1266,7 +1298,7 @@ Harsha Tamtam
 class="section level4">
 <h4>Figures showing distributions of gene counts</h4>
 <pre class="r"><code># The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
-Ensembl_ID_rownames %&gt;% 
+Ensembl_df %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;count_distributions&quot;) %&gt;% 
   mutate(count_distributions = as.numeric(count_distributions)) %&gt;%
@@ -1323,7 +1355,7 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<pre class="r"><code>better_genecount_boxplot &lt;- Ensembl_ID_rownames %&gt;% 
+<pre class="r"><code>better_genecount_boxplot &lt;- Ensembl_df %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;count_distributions&quot;) %&gt;% 
   mutate(count_distributions = as.numeric(count_distributions)) %&gt;% 
@@ -1379,14 +1411,14 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<pre class="r"><code>better_log2cpm_boxplot &lt;- log2_cpm_tbl %&gt;% 
+<pre class="r"><code>log2cpm_metadata &lt;- log2_cpm %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm_values&quot;) %&gt;% 
   mutate(log2cpm_values = as.numeric(log2cpm_values)) %&gt;% 
   left_join(metadata, by = c(&quot;Samples&quot; = &quot;SampleName&quot;))
 
 #head(better_log2cpm_boxplot)
 
-ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
+ggplot(log2cpm_metadata, aes(x = Condition, y = log2cpm_values)) +
   geom_boxplot() +
   labs(title = &quot;Log2 CPM Values&quot;,y=&quot;Log2 CPM Distributions&quot;)+
   theme_bw()+
@@ -1438,13 +1470,7 @@ Harsha Tamtam
 <div id="histograms-showing-distributions-of-log2-cpm-rna-counts"
 class="section level4">
 <h4>Histograms showing distributions of log2 CPM RNA counts</h4>
-<pre class="r"><code>log2_cpm_tbl &lt;- log2_cpm %&gt;%
-  as.data.frame() %&gt;%
-  rownames_to_column(&quot;genes&quot;) %&gt;%
-  as_tibble()
-
-#head(log2_cpm_tbl)</code></pre>
-<pre class="r"><code>log2_cpm_histogram &lt;- log2_cpm_tbl %&gt;%
+<pre class="r"><code>log2_cpm_histogram &lt;- log2_cpm %&gt;%
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;)
 
 ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
@@ -1631,9 +1657,17 @@ Harsha Tamtam
 <div id="filtering-out-rna-counts-where-log2-cpm-is-less-than-zero"
 class="section level4">
 <h4>Filtering out RNA counts where log2 cpm is less than zero</h4>
-<pre class="r"><code>gene_means &lt;- rowMeans(log2_cpm)
-  filtered_log2_cpm &lt;- log2_cpm[gene_means &gt; 0, ]
-  # this code output the number of rows, i.e: the number of genes where log2  0
+<pre class="r"><code>gene_means &lt;- log2_cpm %&gt;% 
+  column_to_rownames(var = &quot;genes&quot;) %&gt;% 
+  rowMeans()
+
+filtered_counts &lt;- Ensembl_matrix[gene_means &gt; 0, ]
+
+filtered_log2_cpm &lt;- cpm(filtered_counts, log = TRUE)
+
+#head(filtered_log2_cpm)
+
+  # this code output the number of rows, i.e: the number of genes where log2 &gt; 0
   #nrow(filtered_log2_cpm)
   # this code outputs the difference between rows of the df log2_cpm, unfiltered from the rows of the df filtered_log2_cpm, which is the number of genes that were removed from filtering, as in the number of genes removed where log2 cpm &lt; 0
   #nrow(log2_cpm) - nrow(filtered_log2_cpm)
@@ -1641,28 +1675,17 @@ class="section level4">
 # Before filtering
   before_tbl &lt;- log2_cpm %&gt;%
   as.data.frame() %&gt;%
-  rownames_to_column(&quot;genes&quot;) %&gt;%
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;) %&gt;%
   mutate(Filter = &quot;Before&quot;)
 
 # After filtering
   after_tbl &lt;- filtered_log2_cpm %&gt;%
   as.data.frame() %&gt;%
-  rownames_to_column(&quot;genes&quot;) %&gt;%
+  rownames_to_column(var = &quot;genes&quot;) %&gt;% 
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;) %&gt;%
   mutate(Filter = &quot;After&quot;)
-  
-head(after_tbl)</code></pre>
-<pre><code># A tibble: 6 × 4
-  genes           Samples     log2cpm Filter
-  &lt;chr&gt;           &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt; 
-1 ENSG00000145794 C40280_IFNy    4.28 After 
-2 ENSG00000145794 C40280_VEH     5.06 After 
-3 ENSG00000145794 H24280_IFNy    4.93 After 
-4 ENSG00000145794 H24280_VEH     5.14 After 
-5 ENSG00000145794 C3649_IFNy     3.80 After 
-6 ENSG00000145794 C3649_VEH      4.28 After </code></pre>
-<pre class="r"><code># This combines the before and after tables to visualize the original and filtered cpm frequency values 
+
+# This combines the before and after tables to visualize the original and filtered cpm frequency values 
 combined_tbl &lt;- bind_rows(before_tbl, after_tbl)
 
 # This code creates a histogram cpm distribution **before filtering**
@@ -1868,21 +1891,21 @@ lookup_table &lt;- counts %&gt;%
   #filter(Symbol == &quot; &quot;)
 
 #head(lookup_table)</code></pre>
-<pre class="r"><code>#head(log2_cpm_tbl)
+<pre class="r"><code>#head(log2_cpm)
 
-MyFavGene_tbl &lt;- log2_cpm_tbl %&gt;% 
+MyFavGene_tbl &lt;- log2_cpm %&gt;% 
   filter(genes %in% c(&quot;ENSG00000118194&quot;, &quot;ENSG00000169245&quot;, &quot;ENSG00000115415&quot;, &quot;ENSG00000179583&quot;, &quot;ENSG00000197442&quot;, &quot;ENSG00000053918&quot;))
 
 head(MyFavGene_tbl)</code></pre>
 <pre><code># A tibble: 6 × 25
   genes       C40280_IFNy C40280_VEH H24280_IFNy H24280_VEH C3649_IFNy C3649_VEH
   &lt;chr&gt;             &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
-1 ENSG000001…        2.71      2.90         3.50      3.62        1.85     2.40 
-2 ENSG000000…        2.73      3.56         3.66      3.90        2.97     3.54 
+1 ENSG000001…        2.71      2.90         3.51      3.62        1.86     2.40 
+2 ENSG000000…        2.73      3.56         3.66      3.91        2.97     3.54 
 3 ENSG000001…       11.1      11.0         11.1      11.0        10.6     10.6  
 4 ENSG000001…       10.8       7.53        11.1       8.15       10.9      7.74 
-5 ENSG000001…       12.1       0.333        5.98     -0.211      11.2      0.485
-6 ENSG000001…        1.61     -1.35         1.33     -2.27        2.44    -1.21 
+5 ENSG000001…       12.1       0.352        5.98     -0.183      11.2      0.503
+6 ENSG000001…        1.62     -1.29         1.34     -2.16        2.44    -1.15 
 # ℹ 18 more variables: H84_1_IFNy &lt;dbl&gt;, H84_1_VEH &lt;dbl&gt;, C40210_IFNy &lt;dbl&gt;,
 #   C40210_VEH &lt;dbl&gt;, H28126_IFNy &lt;dbl&gt;, H28126_VEH &lt;dbl&gt;, C3647_IFNy &lt;dbl&gt;,
 #   C3647_VEH &lt;dbl&gt;, H22422_IFNy &lt;dbl&gt;, H22422_VEH &lt;dbl&gt;, C8861_IFNy &lt;dbl&gt;,
@@ -1897,9 +1920,9 @@ head(MyFavGene_long)</code></pre>
   &lt;chr&gt;           &lt;chr&gt;         &lt;dbl&gt;
 1 ENSG00000197442 C40280_IFNy    2.71
 2 ENSG00000197442 C40280_VEH     2.90
-3 ENSG00000197442 H24280_IFNy    3.50
+3 ENSG00000197442 H24280_IFNy    3.51
 4 ENSG00000197442 H24280_VEH     3.62
-5 ENSG00000197442 C3649_IFNy     1.85
+5 ENSG00000197442 C3649_IFNy     1.86
 6 ENSG00000197442 C3649_VEH      2.40</code></pre>
 <pre class="r"><code>MyFavGene_plot &lt;- MyFavGene_long %&gt;%
   left_join(metadata, by = c(&quot;Samples&quot; = &quot;SampleName&quot;)) %&gt;%
@@ -1916,9 +1939,9 @@ head(MyFavGene_plot)</code></pre>
   &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt;                 &lt;dbl&gt; &lt;chr&gt;  
 1 ENSG0… C40280…    2.71 MCW_EMP_J… C40280   F                         1 C      
 2 ENSG0… C40280…    2.90 MCW_EMP_J… C40280   F                         1 C      
-3 ENSG0… H24280…    3.50 MCW_EMP_J… H24280   F                         5 H      
+3 ENSG0… H24280…    3.51 MCW_EMP_J… H24280   F                         5 H      
 4 ENSG0… H24280…    3.62 MCW_EMP_J… H24280   F                         5 H      
-5 ENSG0… C3649_…    1.85 MCW_EMP_J… C3649    M                         2 C      
+5 ENSG0… C3649_…    1.86 MCW_EMP_J… C3649    M                         2 C      
 6 ENSG0… C3649_…    2.40 MCW_EMP_J… C3649    M                         2 C      
 # ℹ 15 more variables: Individual &lt;chr&gt;, Treatment &lt;fct&gt;, Timepoint &lt;chr&gt;,
 #   Cond &lt;chr&gt;, Condition &lt;chr&gt;, `TNNT-2` &lt;lgl&gt;, Individual_Label &lt;chr&gt;,
@@ -2029,7 +2052,7 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
 }</code></pre>
 <pre class="r"><code>#Note that the capitalized X and lowercase X are important, make sure to distinguish between the cases here!
 
-lapply(X = c(&quot;ENSG00000118194&quot;, &quot;ENSG00000169245&quot;, &quot;ENSG00000115415&quot;, &quot;ENSG00000179583&quot;, &quot;ENSG00000197442&quot;, &quot;ENSG00000053918&quot;), FUN = function(x) {plot_my_genes(log2_cpm_tbl, x)})</code></pre>
+lapply(X = c(&quot;ENSG00000118194&quot;, &quot;ENSG00000169245&quot;, &quot;ENSG00000115415&quot;, &quot;ENSG00000179583&quot;, &quot;ENSG00000197442&quot;, &quot;ENSG00000053918&quot;), FUN = function(x) {plot_my_genes(log2_cpm, x)})</code></pre>
 <pre><code>[[1]]</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20code%20utilizes%20the%20function%20I%20created%20to%20show%20multiple%20genes%20of%20interests%20log2%20cpm%20counts%20via%20treatment%20condition%20and%20across%20species-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -2504,7 +2527,7 @@ after_filter_with_metadata &lt;- log2_filtered_df %&gt;%
   dplyr::select(genes, log2cpm, Condition) %&gt;% 
   dplyr::filter(Condition %in% c(&quot;C_VEH_C2&quot;, condition_name))
 
-wide_scatter &lt;-after_filter_with_metadata %&gt;%
+wide_scatter &lt;- after_filter_with_metadata %&gt;%
   pivot_wider(names_from = Condition, values_from = log2cpm) %&gt;% 
   ggplot(., aes(x = C_VEH_C2, y = .data[[condition_name]])) +
   geom_point() +
@@ -2683,40 +2706,16 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<pre class="r"><code>spearman_matrix &lt;- after_tbl %&gt;% 
+<pre class="r"><code>spearman_df &lt;- after_tbl %&gt;% 
   left_join(metadata, by = c(&quot;Samples&quot; = &quot;SampleName&quot;)) %&gt;% 
-  select(genes, log2cpm, Condition) %&gt;% 
+  select(genes, log2cpm, Condition) %&gt;%
   pivot_wider(names_from = Condition, values_from = log2cpm) %&gt;% 
   column_to_rownames(var = &quot;genes&quot;)
-head(spearman_matrix)</code></pre>
-<pre><code>                C_IFNy_C1 C_VEH_C1 H_IFNy_H2 H_VEH_H2 C_IFNy_C2 C_VEH_C2
-ENSG00000145794 4.2788216 5.063285 4.9334592 5.138089  3.802367 4.284262
-ENSG00000144476 4.4315892 3.858393 5.8250283 5.372984  4.341432 3.642023
-ENSG00000113916 5.0271755 4.775651 5.7532684 5.409254  4.767641 4.491947
-ENSG00000144161 3.7461756 4.055903 4.2296557 4.357219  4.234880 4.602978
-ENSG00000272008 0.7568113 0.851323 0.9015915 1.123429  1.075109 1.023911
-ENSG00000113621 6.1453337 6.344397 6.0300759 6.125649  5.216329 5.406654
-                H_IFNy_H6 H_VEH_H6 C_IFNy_C3 C_VEH_C3   H_IFNy_H1   H_VEH_H1
-ENSG00000145794 3.2732809 4.138966  4.829976 5.903114  2.07246185  2.4497532
-ENSG00000144476 6.9451794 6.340083  3.959300 3.314573  7.62130513  6.2274722
-ENSG00000113916 5.7293914 5.357421  5.425268 5.190121  6.01920856  5.3044405
-ENSG00000144161 3.6602759 4.056213  3.818143 4.026392  4.12846348  4.7371783
-ENSG00000272008 0.7467417 1.398144  1.367087 1.507253 -0.02175963 -0.5058729
-ENSG00000113621 6.6561276 6.744203  6.393417 6.485284  6.70123390  6.5954194
-                C_IFNy_C5 C_VEH_C5 H_IFNy_H3  H_VEH_H3 C_IFNy_C4  C_VEH_C4
-ENSG00000145794 5.0396519 5.956334 0.7146640 0.2966301 5.2730302 6.0965616
-ENSG00000144476 5.3421420 4.552015 5.2994600 4.9044281 2.7804205 2.1344131
-ENSG00000113916 5.7588261 5.784391 5.7310307 5.4370230 5.5507522 5.0523984
-ENSG00000144161 3.4293577 3.890324 3.9980206 4.5104008 3.4753222 3.4688806
-ENSG00000272008 0.4593749 1.023930 0.7796027 1.5078220 0.9964388 0.8807587
-ENSG00000113621 6.0267505 6.187261 6.0147064 6.3224749 5.8905172 6.0222668
-                H_IFNy_H4 H_VEH_H4 C_IFNy_C2R C_VEH_C2R H_IFNy_H5 H_VEH_H5
-ENSG00000145794  1.000609 1.371506   3.356712  3.854430  2.465767 2.237630
-ENSG00000144476  5.535780 5.255737   5.215492  4.413061  5.059109 4.814911
-ENSG00000113916  5.567110 5.336460   4.768992  4.143233  5.610877 5.438079
-ENSG00000144161  4.183735 4.749982   3.919369  4.363189  3.779124 4.296766
-ENSG00000272008  1.730230 1.786584   0.888155  0.662235  1.056539 1.136570
-ENSG00000113621  5.976533 5.966802   4.905216  5.238823  6.433494 6.152417</code></pre>
+
+#head(spearman_df)</code></pre>
+</div>
+<div id="heatmap-of-spearman-correlations" class="section level4">
+<h4>Heatmap of Spearman Correlations</h4>
 <pre class="r"><code>attribute_labels_df &lt;- metadata %&gt;%
    select(Sex, Species, Individual, Treatment, Condition) %&gt;%
    column_to_rownames(var = &quot;Condition&quot;) %&gt;% 
@@ -2724,7 +2723,7 @@ ENSG00000113621  5.976533 5.966802   4.905216  5.238823  6.433494 6.152417</code
 #head(attribute_labels_df)
  
  spearman_cor &lt;- cor(
-   spearman_matrix,
+   spearman_df,
    method = &quot;spearman&quot;
  )
  
@@ -2733,8 +2732,7 @@ ENSG00000113621  5.976533 5.966802   4.905216  5.238823  6.433494 6.152417</code
    names = unique(attribute_labels_df$Individual)
  )
  
- 
- hmp_anno &lt;- HeatmapAnnotation(
+ heatmap_anno &lt;- HeatmapAnnotation(
    Species = attribute_labels_df$Species,
    Sex = attribute_labels_df$Sex,
    Treatment = attribute_labels_df$Treatment,
@@ -2767,7 +2765,7 @@ ENSG00000113621  5.976533 5.966802   4.905216  5.238823  6.433494 6.152417</code
    height = unit(8, &quot;cm&quot;),
    row_names_gp = gpar(fontsize = 8), 
    column_names_gp = gpar(fontsize = 8), 
-   top_annotation = hmp_anno
+   top_annotation = heatmap_anno
  )</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20is%20code%20to%20make%20a%20heatmap%20of%20log2%20cpm%20counts%20for%20each%20sample-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -2821,11 +2819,35 @@ Harsha Tamtam
 </table>
 </div>
 </div>
-<pre class="r"><code>pca_matrix &lt;- t(spearman_matrix)
-
-pca_plotting &lt;- prcomp(pca_matrix,
-                     scale. = TRUE,
-                     retx = TRUE
+<pre class="r"><code># cluster_verification &lt;- hclust(
+#   dist(
+#   t(spearman_cor)),
+#   method = &quot;complete&quot;
+#   )
+# 
+# plot(cluster_verification)
+# 
+# pheatmap(
+#   spearman_cor,
+#   cluster_cols = cluster_verification
+# )
+# 
+# Heatmap(
+#   spearman_cor,
+#   cluster_columns = as.dendrogram(cluster_verification),
+#   cluster_rows = as.dendrogram(cluster_verification)
+# )</code></pre>
+</div>
+<div
+id="scree-plot-for-amount-of-variance-explained-by-principal-components"
+class="section level4">
+<h4>Scree plot for amount of variance explained by principal
+components</h4>
+<pre class="r"><code>pca_df &lt;- t(spearman_df)
+pca_plotting &lt;- prcomp(pca_df,
+                       center = TRUE,
+                       scale. = FALSE,
+                       retx = TRUE
                      )
 
 
@@ -2843,9 +2865,15 @@ pca_analysis &lt;- data.frame(
   Variance = pca_variance
 )
 
-#head(pca_analysis)
-
-pca_analysis$Samples &lt;- rownames(pca_df)
+head(pca_analysis)</code></pre>
+<pre><code>  Component  Variance
+1         1 50.874431
+2         2 11.666018
+3         3  8.923057
+4         4  8.174131
+5         5  5.090603
+6         6  3.213650</code></pre>
+<pre class="r"><code>pca_analysis$Samples &lt;- rownames(pca_df)
 
 pca_anno &lt;- pca_df %&gt;%
   rownames_to_column(&quot;Samples&quot;) %&gt;% 
@@ -2861,9 +2889,192 @@ ggplot(pca_analysis, aes(x = Component , y = Variance)) +
   geom_point() +
   xlab(&quot;Principal Components&quot;) +
   ylab(&quot;Proportion of Variances&quot;) +
-  ggtitle(&quot; Analsysis of Components Contributing to Variance&quot;) +
+  ggtitle(&quot; Analysis of Components Contributing to Variance&quot;) +
   theme_bw()</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20code%20is%20creating%20PCA%20plots%20to%20determine%20factors%20of%20variance%20in%20samples-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-This-code-is-creating-PCA-plots-to-determine-factors-of-variance-in-samples-1">
+Past versions of "This code is creating PCA plots to determine factors
+of variance in samples-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-This-code-is-creating-PCA-plots-to-determine-factors-of-variance-in-samples-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/d3046201241752001b7f176d6cbc20667888e11e/docs/figure/IFNy_Metadata.Rmd/This code is creating PCA plots to determine factors of variance in samples-1.png" target="_blank">d304620</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-02
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div
+id="observations-on-which-factors-have-the-most-significant-effects-on-principal-component-variances"
+class="section level4">
+<h4>Observations on which factors have the most significant effects on
+principal component variances</h4>
+<pre class="r"><code>pca_plot_new &lt;- function(df, pc_x = 1, pc_y = 2, col_var, shape_var, pca_plotting, title = &quot;&quot;) {
+  
+  # variance explained
+  pca_variance &lt;- (pca_plotting$sdev^2 / sum(pca_plotting$sdev^2))*100
+  
+  # axis labels
+  x_lab &lt;- sprintf(&quot;PC%d (%.1f%%)&quot;, pc_x, pca_variance[pc_x] * 100)
+  y_lab &lt;- sprintf(&quot;PC%d (%.1f%%)&quot;, pc_y, pca_variance[pc_y] * 100)
+  
+  ggplot(df, aes(x = .data[[paste0(&quot;PC&quot;, pc_x)]], 
+                 y = .data[[paste0(&quot;PC&quot;, pc_y)]], 
+                 color = !!sym(col_var), 
+                 shape = !!sym(shape_var))) +
+    geom_point(size = 5) +
+    labs(title = title, x = x_lab, y = y_lab) +
+    scale_color_manual(values = c(
+      &quot;#8B006D&quot;,&quot;#DF707E&quot;,&quot;#F1B72B&quot;,
+      &quot;#3386DD&quot;,&quot;#707031&quot;,&quot;#41B333&quot;
+    ))
+}
+
+pca_plot &lt;-
+  function(pca_df, col_var = NULL, shape_var = NULL, title = &quot;&quot;) {
+    ggplot(df) + geom_point(aes(
+      x = PC1,
+      y = PC2,
+      color = col_var,
+      shape = shape_var
+    ),
+    size = 5) +
+      labs(title = title, x = &quot;PC 1&quot;, y = &quot;PC 2&quot;) +
+      scale_color_manual(values = c(
+        &quot;#8B006D&quot;,
+        &quot;#DF707E&quot;,
+        &quot;#F1B72B&quot;,
+        &quot;#3386DD&quot;,
+        &quot;#707031&quot;,
+        &quot;#41B333&quot;
+      ))
+  }
+
+get_regr_pval &lt;- function(model) {
+  # Returns the p-value for the F statistic of a linear model
+  # mod: class lm
+  stopifnot(inherits(model, &quot;lm&quot;))
+  fstat &lt;- summary(model)$fstatistic
+  pval &lt;- 1 - pf(fstat[1], fstat[2], fstat[3])
+  return(pval)
+}
+
+plot_versus_pc &lt;- function(pca_anno, pc_num, facs) {
+  # df: data.frame
+  # pc_num: numeric, specific PC for plotting
+  # facs: column name of df for plotting against PC
+  pc_char &lt;- paste0(&quot;PC&quot;, pc_num)
+  # Calculate F-statistic p-value for linear model
+  
+  form &lt;- as.formula(paste(pc_char, &quot;~&quot;, facs))
+  model &lt;- lm(form, data = pca_anno)
+
+  pval &lt;- get_regr_pval(model)
+
+  if (is.numeric(pca_anno[[facs]])) {
+    ggplot(pca_anno, aes_string(x = facs, y = pc_char)) +
+      geom_point() +
+      geom_smooth(method = &quot;lm&quot;) +
+      labs(title = sprintf(&quot;p-val: %.3g&quot;, pval))
+  }
+  else {
+    ggplot(pca_anno, aes_string(x = facs, y = pc_char)) +
+      geom_boxplot() +
+      labs(title = sprintf(&quot;p-val: %.3g&quot;, pval))
+  }
+}
+
+#The lines of code below ouput the number of unique labels for each attribute I call from the pca_charts data frame 
+# sapply(c(&quot;species&quot;, &quot;tx&quot;, &quot;ind&quot;, &quot;sex&quot;), function(x) {
+#   length(unique(na.omit(pca_charts[[x]])))
+# })</code></pre>
+<p>Here we can see that Species and Individual attributes have the most
+significant influence over PC1, while the Treatment attribute has the
+most significant influence over PC2. Sex has some statistical
+significant influence over PC1, but has a more significant (and likely
+biological significance) over PC5.</p>
+<pre class="r"><code>pca_charts &lt;- pca_anno %&gt;% 
+  separate(Samples, into = c(&quot;species&quot;,&quot;tx&quot;,&quot;ind&quot;)) %&gt;%
+  mutate(tx=factor(tx, levels = c(&quot;VEH&quot;, &quot;IFNy&quot;))) %&gt;% 
+  mutate(sex=factor(Sex, levels=c(&quot;F&quot;,&quot;M&quot;)))
+
+facs &lt;- c(&quot;species&quot;, &quot;sex&quot;, &quot;tx&quot;, &quot;ind&quot;)
+names(facs) &lt;- c(&quot;Species&quot;, &quot;Sex&quot;, &quot;Treatment&quot;,&quot;Individual&quot;)
+
+plots_of_pcas &lt;- lapply(names(facs), function(f_label) {
+  f &lt;- facs[f_label]
+  f_v_pc1 &lt;- plot_versus_pc(pca_charts, 1, f)
+  f_v_pc2 &lt;- plot_versus_pc(pca_charts, 2, f)
+  f_v_pc3 &lt;- plot_versus_pc(pca_charts, 3, f)
+  f_v_pc4 &lt;- plot_versus_pc(pca_charts, 4, f)
+  f_v_pc5 &lt;- plot_versus_pc(pca_charts, 5, f)
+  f_v_pc6 &lt;- plot_versus_pc(pca_charts, 6, f)
+
+  grid.arrange(f_v_pc1, f_v_pc2, f_v_pc3, f_v_pc4, f_v_pc5, f_v_pc6, ncol = 2, top = paste0(f_label,&quot; PCA Analyses&quot;))
+})</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-1.png" alt="" width="672" style="display: block; margin: auto;" /><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-2.png" alt="" width="672" style="display: block; margin: auto;" /><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-3.png" alt="" width="672" style="display: block; margin: auto;" /><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-4.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div
+id="pca-plot-demonstrating-speciessexindividual-pc1-and-treatment-pc2-stratification"
+class="section level4">
+<h4>PCA plot demonstrating Species/Sex/Individual (PC1) and Treatment
+(PC2) stratification</h4>
+<pre class="r"><code>ggplot(
+  pca_anno,
+  aes(
+    x = PC1,
+    y = PC2,
+    color = Species,
+    shape = Treatment
+  )
+) +
+  geom_point(size = 4) +
+  geom_text_repel(
+    aes(label = Samples), size = 2.5) +
+  labs(
+    title = &quot;PCA of RNA-seq Samples&quot;,
+    x = paste0(
+      &quot;PC1: &quot;,
+      round(pca_variance[1], 1),
+      &quot;% variance&quot;
+    ),
+    y = paste0(
+      &quot;PC2: &quot;,
+      round(pca_variance[2], 1),
+      &quot;% variance&quot;
+    )
+  ) +
+  theme_classic()</code></pre>
+<p><img src="figure/IFNy_Metadata.Rmd/This%20chunk%20of%20code%20is%20my%20attempt%20at%20creating%20PCA%20plots%20to%20illustrate%20which%20factors%20contribute%20to%20varience%20between%20samples-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -2895,13 +3106,13 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] gridExtra_2.3         RColorBrewer_1.1-3    ComplexHeatmap_2.25.3
- [4] ggpubr_0.6.3          smplot2_0.2.6         edgeR_4.10.0         
- [7] limma_3.68.2          scales_1.4.0          lubridate_1.9.5      
-[10] forcats_1.0.1         stringr_1.6.0         dplyr_1.2.1          
-[13] purrr_1.2.2           readr_2.2.0           tidyr_1.3.2          
-[16] tibble_3.3.1          ggplot2_4.0.3         tidyverse_2.0.0      
-[19] workflowr_1.7.2      
+ [1] ggrepel_0.9.8         gridExtra_2.3         RColorBrewer_1.1-3   
+ [4] ComplexHeatmap_2.25.3 ggpubr_0.6.3          smplot2_0.2.6        
+ [7] edgeR_4.10.0          limma_3.68.2          scales_1.4.0         
+[10] lubridate_1.9.5       forcats_1.0.1         stringr_1.6.0        
+[13] dplyr_1.2.1           purrr_1.2.2           readr_2.2.0          
+[16] tidyr_1.3.2           tibble_3.3.1          ggplot2_4.0.3        
+[19] tidyverse_2.0.0       workflowr_1.7.2      
 
 loaded via a namespace (and not attached):
  [1] rlang_1.2.0         magrittr_2.0.5      clue_0.3-68        
