@@ -26,7 +26,7 @@ pre[class] {
 }
 ```
 
-### Library Section
+## Library Section
 ```{r Libraries}
 library(tidyverse)
 library(dplyr)
@@ -43,7 +43,7 @@ library(ggrepel)
 ```
 
 
-### Viewing and Manipulating Dataframes
+## Viewing and Manipulating Dataframes
 ```{r}
 
 # this command creates an object (remove hashtag to make the function below operational)
@@ -77,7 +77,7 @@ log2_cpm <- cpm(Ensembl_matrix, log = TRUE) %>%
 
 ```
 
-### Data Analyses
+## Data Analyses
 
 ```{r eval=FALSE, include=FALSE}
 head(metadata)
@@ -94,7 +94,7 @@ mean(metadata$Mapped_Reads)
 metadata %>% 
   summary()
 ```
-#### Boxplot and Column chart showing average and individual mapped RNA reads
+### Boxplot and Column chart showing average and individual mapped RNA reads
 
 ```{r Averaged mapped reads by Individual in Species box plot}
 
@@ -112,7 +112,7 @@ ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
 
 ```
 
-#### Figures showing distributions of gene counts
+### Figures showing distributions of gene counts
 
 ```{r Making Boxplot showing distributions of gene counts}
 
@@ -181,7 +181,7 @@ ggplot(log2cpm_metadata, aes(x = Condition, y = log2cpm_values)) +
 
 ```
 
-#### Histograms showing distributions of log2 CPM RNA counts
+### Histograms showing distributions of log2 CPM RNA counts
 
 ```{r All samples Log2CPM distributions put in histogram}
 
@@ -236,7 +236,7 @@ ggplot(log2_cpm_histogram,
         strip.text.y = element_text(color = "white"))
 
 ```
-#### Filtering out RNA counts where log2 cpm is less than zero
+### Filtering out RNA counts where log2 cpm is less than zero
 
 ```{r Filtering out lowly expressed genes where log2cpm is less than zero}
 
@@ -299,7 +299,7 @@ ggplot(reordered_combined_tbl, aes(x = Filter, y = log2cpm, fill = Filter)) +
   labs(title = "Log2 CPM Boxplots",y = "log2 CPM")
 ```
 
-#### Identifying genes of interest whose RNA counts change across species and/or IFNy treatment
+### Identifying genes of interest whose RNA counts change across species and/or IFNy treatment
 
 ```{r Making a Search and Lookup Table to easily associate Ensembl IDs to Gene Names}
 # here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
@@ -433,7 +433,7 @@ lapply(X = c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000
 
 ```
 
-#### Creating Scatter plots to determine log2 cpm gene count similarities across the individuals, treatments, and species
+### Creating Scatter plots to determine log2 cpm gene count similarities across the individuals, treatments, and species
 
 ```{r Scatter plot to compare sample similarities under species and treatment categories}
 
@@ -469,7 +469,7 @@ spearman_df <- after_tbl %>%
 
 ```
 
-#### Heatmap of Spearman Correlations
+### Heatmap of Spearman Correlations
 
 ```{r This is code to make a heatmap of log2 cpm counts for each sample, fig.width=7, fig.height=5.5}
 
@@ -545,7 +545,7 @@ attribute_labels_df <- metadata %>%
 # )
 ```
 
-#### Scree plot for amount of variance explained by principal components
+### Scree plot for amount of variance explained by principal components
 
 ```{r This code is creating PCA plots to determine factors of variance in samples}
 pca_df <- t(spearman_df)
@@ -594,7 +594,7 @@ ggplot(pca_analysis, aes(x = Component , y = Variance)) +
 
 ```
 
-#### Observations on which factors have the most significant effects on principal component variances
+### Observations on which factors have the most significant effects on principal component variances
 
 ```{r This chunk of code is my attempt to make a function that will plot the PCA plots I am interested with in one go}
 
@@ -705,7 +705,7 @@ plots_of_pcas <- lapply(names(facs), function(f_label) {
 
 ```
 
-#### PCA plot demonstrating Species/Sex/Individual (PC1) and Treatment (PC2) stratification
+### PCA plot demonstrating Species/Sex/Individual (PC1) and Treatment (PC2) stratification
 
 ```{r This chunk of code is my attempt at creating PCA plots to illustrate which factors contribute to varience between samples}
 
