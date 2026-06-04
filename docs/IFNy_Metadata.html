@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree911c514c5af21f6c732c83bfcc7bbfa59988fe53targetblank911c514a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree01da19c9d2708ea71c41bc7d1d31d44fb016861btargetblank01da19ca">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/911c514c5af21f6c732c83bfcc7bbfa59988fe53" target="_blank">911c514</a>
+<a href="https://github.com/hatamtam/IFNy/tree/01da19c9d2708ea71c41bc7d1d31d44fb016861b" target="_blank">01da19c</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree911c514c5af21f6c732c83bfcc7bbfa59988fe53targetblank911c514a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree01da19c9d2708ea71c41bc7d1d31d44fb016861btargetblank01da19ca"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/911c514c5af21f6c732c83bfcc7bbfa59988fe53" target="_blank">911c514</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/01da19c9d2708ea71c41bc7d1d31d44fb016861b" target="_blank">01da19c</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -611,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/01da19c9d2708ea71c41bc7d1d31d44fb016861b/analysis/IFNy_Metadata.Rmd" target="_blank">01da19c</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+<td>
+wflow_publish("analysis/IFNy_Metadata.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/IFNy_Metadata.html" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1182,8 +1216,8 @@ first commit
 <p>the chunk of code below formats the code on the webpage
 <style type="text/css"> pre { max-height: 400px; overflow-y: auto; }</p>
 <p>pre[class] { max-height: 200px; } </style></p>
-<div id="library-section" class="section level3">
-<h3>Library Section</h3>
+<div id="library-section" class="section level2">
+<h2>Library Section</h2>
 <pre class="r"><code>library(tidyverse)
 library(dplyr)
 library(tibble)
@@ -1197,8 +1231,8 @@ library(RColorBrewer)
 library(gridExtra)
 library(ggrepel)</code></pre>
 </div>
-<div id="viewing-and-manipulating-dataframes" class="section level3">
-<h3>Viewing and Manipulating Dataframes</h3>
+<div id="viewing-and-manipulating-dataframes" class="section level2">
+<h2>Viewing and Manipulating Dataframes</h2>
 <pre class="r"><code># this command creates an object (remove hashtag to make the function below operational)
 # my_data &lt;- data.frame(x = 1:5, y = letters[1:5])
 
@@ -1223,13 +1257,13 @@ log2_cpm &lt;- cpm(Ensembl_matrix, log = TRUE) %&gt;%
   rownames_to_column(&quot;genes&quot;) %&gt;%
   as_tibble()</code></pre>
 </div>
-<div id="data-analyses" class="section level3">
-<h3>Data Analyses</h3>
+<div id="data-analyses" class="section level2">
+<h2>Data Analyses</h2>
 <div
 id="boxplot-and-column-chart-showing-average-and-individual-mapped-rna-reads"
-class="section level4">
-<h4>Boxplot and Column chart showing average and individual mapped RNA
-reads</h4>
+class="section level3">
+<h3>Boxplot and Column chart showing average and individual mapped RNA
+reads</h3>
 <pre class="r"><code>ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
   geom_boxplot(aes(fill=Species))+
   geom_point(data = metadata, aes(x = Species, y = Mapped_Reads))+
@@ -1295,8 +1329,8 @@ Harsha Tamtam
 </div>
 </div>
 <div id="figures-showing-distributions-of-gene-counts"
-class="section level4">
-<h4>Figures showing distributions of gene counts</h4>
+class="section level3">
+<h3>Figures showing distributions of gene counts</h3>
 <pre class="r"><code># The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
 Ensembl_df %&gt;% 
   rownames_to_column(&quot;genes&quot;) %&gt;% 
@@ -1453,6 +1487,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/A Boxplot of Log2 CPM values-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/f9488d54fef5a1fded1636cd3f3ca8aa403cf735/docs/figure/IFNy_Metadata.Rmd/A Boxplot of Log2 CPM values-1.png" target="_blank">f9488d5</a>
 </td>
 <td>
@@ -1468,8 +1513,8 @@ Harsha Tamtam
 </div>
 </div>
 <div id="histograms-showing-distributions-of-log2-cpm-rna-counts"
-class="section level4">
-<h4>Histograms showing distributions of log2 CPM RNA counts</h4>
+class="section level3">
+<h3>Histograms showing distributions of log2 CPM RNA counts</h3>
 <pre class="r"><code>log2_cpm_histogram &lt;- log2_cpm %&gt;%
   pivot_longer(-genes, names_to = &quot;Samples&quot;, values_to = &quot;log2cpm&quot;)
 
@@ -1509,6 +1554,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/All samples Log2CPM distributions put in histogram-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/044b47924b0d26728de4d027d4ed88c2401e258e/docs/figure/IFNy_Metadata.Rmd/All samples Log2CPM distributions put in histogram-1.png" target="_blank">044b479</a>
@@ -1564,6 +1620,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/All samples in histogram distinguished by color-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/fa788e810a79f09eea637cae6168ca5639c39101/docs/figure/IFNy_Metadata.Rmd/All samples in histogram distinguished by color-1.png" target="_blank">fa788e8</a>
@@ -1640,6 +1707,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Separating the histogram of log2 cpm values per unique sample-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Separating the histogram of log2 cpm values per unique sample-1.png" target="_blank">4d8043c</a>
 </td>
 <td>
@@ -1655,8 +1733,8 @@ Harsha Tamtam
 </div>
 </div>
 <div id="filtering-out-rna-counts-where-log2-cpm-is-less-than-zero"
-class="section level4">
-<h4>Filtering out RNA counts where log2 cpm is less than zero</h4>
+class="section level3">
+<h3>Filtering out RNA counts where log2 cpm is less than zero</h3>
 <pre class="r"><code>gene_means &lt;- log2_cpm %&gt;% 
   column_to_rownames(var = &quot;genes&quot;) %&gt;% 
   rowMeans()
@@ -1721,6 +1799,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-1.png" target="_blank">4d8043c</a>
 </td>
 <td>
@@ -1767,6 +1856,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-2.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-2.png" target="_blank">4d8043c</a>
 </td>
 <td>
@@ -1811,6 +1911,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-3.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-3.png" target="_blank">4d8043c</a>
@@ -1862,6 +1973,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-4.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/4d8043c5f37de05510972e88b2d7fb63af251782/docs/figure/IFNy_Metadata.Rmd/Filtering out lowly expressed genes where log2cpm is less than zero-4.png" target="_blank">4d8043c</a>
 </td>
 <td>
@@ -1878,9 +2000,9 @@ Harsha Tamtam
 </div>
 <div
 id="identifying-genes-of-interest-whose-rna-counts-change-across-species-andor-ifny-treatment"
-class="section level4">
-<h4>Identifying genes of interest whose RNA counts change across species
-and/or IFNy treatment</h4>
+class="section level3">
+<h3>Identifying genes of interest whose RNA counts change across species
+and/or IFNy treatment</h3>
 <pre class="r"><code># here I am able to look up any gene name and its associated Ensembl ID by changing the symbol name in the filter () function inside the quotation marks. The head() command then shows which Ensembl ID is associated with the Symbol
 
 #Remove the hashtag after the filter() command to activate, and remember to put the %&gt;% pathing after line 326. 
@@ -1985,6 +2107,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Showing MyFavGene log2 cpm counts via treatment condition and across species-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/32acc2955ce9a4fc4be97cb2308c728f0161811a/docs/figure/IFNy_Metadata.Rmd/Showing MyFavGene log2 cpm counts via treatment condition and across species-1.png" target="_blank">32acc29</a>
@@ -2160,6 +2293,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-2.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/32acc2955ce9a4fc4be97cb2308c728f0161811a/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-2.png" target="_blank">32acc29</a>
 </td>
 <td>
@@ -2314,6 +2458,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-4.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/32acc2955ce9a4fc4be97cb2308c728f0161811a/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-4.png" target="_blank">32acc29</a>
 </td>
 <td>
@@ -2389,6 +2544,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-5.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/32acc2955ce9a4fc4be97cb2308c728f0161811a/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-5.png" target="_blank">32acc29</a>
@@ -2468,6 +2634,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-6.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/32acc2955ce9a4fc4be97cb2308c728f0161811a/docs/figure/IFNy_Metadata.Rmd/This code utilizes the function I created to show multiple genes of interests log2 cpm counts via treatment condition and across species-6.png" target="_blank">32acc29</a>
 </td>
 <td>
@@ -2517,9 +2694,9 @@ Harsha Tamtam
 </div>
 <div
 id="creating-scatter-plots-to-determine-log2-cpm-gene-count-similarities-across-the-individuals-treatments-and-species"
-class="section level4">
-<h4>Creating Scatter plots to determine log2 cpm gene count similarities
-across the individuals, treatments, and species</h4>
+class="section level3">
+<h3>Creating Scatter plots to determine log2 cpm gene count similarities
+across the individuals, treatments, and species</h3>
 <pre class="r"><code>scatter_function &lt;- function(log2_filtered_df, condition_name){
   
 after_filter_with_metadata &lt;- log2_filtered_df %&gt;%
@@ -2562,6 +2739,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-1.png" target="_blank">9adc48d</a>
@@ -2607,6 +2795,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-2.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-2.png" target="_blank">9adc48d</a>
 </td>
 <td>
@@ -2648,6 +2847,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-3.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-3.png" target="_blank">9adc48d</a>
@@ -2693,6 +2903,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-4.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/9adc48dfc8653c1b5950206a3ba53608d0ebb9b9/docs/figure/IFNy_Metadata.Rmd/This code calls the scatter_function from above and applies a list that I have provided below-4.png" target="_blank">9adc48d</a>
 </td>
 <td>
@@ -2714,8 +2935,8 @@ Harsha Tamtam
 
 #head(spearman_df)</code></pre>
 </div>
-<div id="heatmap-of-spearman-correlations" class="section level4">
-<h4>Heatmap of Spearman Correlations</h4>
+<div id="heatmap-of-spearman-correlations" class="section level3">
+<h3>Heatmap of Spearman Correlations</h3>
 <pre class="r"><code>attribute_labels_df &lt;- metadata %&gt;%
    select(Sex, Species, Individual, Treatment, Condition) %&gt;%
    column_to_rownames(var = &quot;Condition&quot;) %&gt;% 
@@ -2795,6 +3016,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This is code to make a heatmap of log2 cpm counts for each sample-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/32acc2955ce9a4fc4be97cb2308c728f0161811a/docs/figure/IFNy_Metadata.Rmd/This is code to make a heatmap of log2 cpm counts for each sample-1.png" target="_blank">32acc29</a>
 </td>
 <td>
@@ -2840,9 +3072,9 @@ Harsha Tamtam
 </div>
 <div
 id="scree-plot-for-amount-of-variance-explained-by-principal-components"
-class="section level4">
-<h4>Scree plot for amount of variance explained by principal
-components</h4>
+class="section level3">
+<h3>Scree plot for amount of variance explained by principal
+components</h3>
 <pre class="r"><code>pca_df &lt;- t(spearman_df)
 pca_plotting &lt;- prcomp(pca_df,
                        center = TRUE,
@@ -2919,6 +3151,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This code is creating PCA plots to determine factors of variance in samples-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/d3046201241752001b7f176d6cbc20667888e11e/docs/figure/IFNy_Metadata.Rmd/This code is creating PCA plots to determine factors of variance in samples-1.png" target="_blank">d304620</a>
 </td>
 <td>
@@ -2935,9 +3178,9 @@ Harsha Tamtam
 </div>
 <div
 id="observations-on-which-factors-have-the-most-significant-effects-on-principal-component-variances"
-class="section level4">
-<h4>Observations on which factors have the most significant effects on
-principal component variances</h4>
+class="section level3">
+<h3>Observations on which factors have the most significant effects on
+principal component variances</h3>
 <pre class="r"><code>pca_plot_new &lt;- function(df, pc_x = 1, pc_y = 2, col_var, shape_var, pca_plotting, title = &quot;&quot;) {
   
   # variance explained
@@ -3041,13 +3284,176 @@ plots_of_pcas &lt;- lapply(names(facs), function(f_label) {
 
   grid.arrange(f_v_pc1, f_v_pc2, f_v_pc3, f_v_pc4, f_v_pc5, f_v_pc6, ncol = 2, top = paste0(f_label,&quot; PCA Analyses&quot;))
 })</code></pre>
-<p><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-1.png" alt="" width="672" style="display: block; margin: auto;" /><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-2.png" alt="" width="672" style="display: block; margin: auto;" /><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-3.png" alt="" width="672" style="display: block; margin: auto;" /><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-4.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-1">
+Past versions of "Here I will apply the function about to this current
+function with a list to plot all PCA variance graphs of interest-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-2.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-2">
+Past versions of "Here I will apply the function about to this current
+function with a list to plot all PCA variance graphs of interest-2.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-2"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest-2.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-3.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-3">
+Past versions of "Here I will apply the function about to this current
+function with a list to plot all PCA variance graphs of interest-3.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-3"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest-3.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/IFNy_Metadata.Rmd/Here%20I%20will%20apply%20the%20function%20about%20to%20this%20current%20function%20with%20a%20list%20to%20plot%20all%20PCA%20variance%20graphs%20of%20interest-4.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-4">
+Past versions of "Here I will apply the function about to this current
+function with a list to plot all PCA variance graphs of interest-4.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Here-I-will-apply-the-function-about-to-this-current-function-with-a-list-to-plot-all-PCA-variance-graphs-of-interest-4"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest-4.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div
 id="pca-plot-demonstrating-speciessexindividual-pc1-and-treatment-pc2-stratification"
-class="section level4">
-<h4>PCA plot demonstrating Species/Sex/Individual (PC1) and Treatment
-(PC2) stratification</h4>
+class="section level3">
+<h3>PCA plot demonstrating Species/Sex/Individual (PC1) and Treatment
+(PC2) stratification</h3>
 <pre class="r"><code>ggplot(
   pca_anno,
   aes(
@@ -3075,6 +3481,47 @@ class="section level4">
   ) +
   theme_classic()</code></pre>
 <p><img src="figure/IFNy_Metadata.Rmd/This%20chunk%20of%20code%20is%20my%20attempt%20at%20creating%20PCA%20plots%20to%20illustrate%20which%20factors%20contribute%20to%20varience%20between%20samples-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-This-chunk-of-code-is-my-attempt-at-creating-PCA-plots-to-illustrate-which-factors-contribute-to-varience-between-samples-1">
+Past versions of "This chunk of code is my attempt at creating PCA plots
+to illustrate which factors contribute to varience between
+samples-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-This-chunk-of-code-is-my-attempt-at-creating-PCA-plots-to-illustrate-which-factors-contribute-to-varience-between-samples-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/7a53a96a45202b4916af397a532f35013f8a9fdc/docs/figure/IFNy_Metadata.Rmd/This chunk of code is my attempt at creating PCA plots to illustrate which factors contribute to varience between samples-1.png" target="_blank">7a53a96</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-04
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
