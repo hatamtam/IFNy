@@ -39,6 +39,7 @@ library(workflowr)
 library(ComplexHeatmap)
 library(RColorBrewer)
 library(gridExtra)
+library(ggrepel)
 ```
 
 
@@ -57,7 +58,7 @@ metadata <- readRDS("data/metadata_IFNy.RDS")
 counts <- readRDS("data/counts_IFNy.RDS")
 
 # The function below reassigns the original row names (i.e: 1, 2 ,3, etc.) to their respective Ensembl_ID column and deletes the Entrez_ID and Symbol columns
-Ensembl_ID_rownames <- counts %>%
+Ensembl_df <- counts %>%
   column_to_rownames(var = "Ensemble") %>% 
   dplyr::select(-c(Entrez_ID, Symbol))
 
@@ -65,14 +66,12 @@ Ensembl_ID_rownames <- counts %>%
 
 ```{r Converting the Continuous Counts values to Log2 CPM values}
 
-count_matrix <- Ensembl_ID_rownames %>%
+Ensembl_matrix <- Ensembl_df %>%
   mutate(across(everything(), as.numeric)) %>%
-  as.matrix() #This function makes sure the counts table, labeled Ensembl_ID_rownames, is converted to a matrix
+  as.matrix()
 
-log2_cpm <- cpm(count_matrix, log = TRUE, prior.count = 1) #This function assigns the log2_cpm function with the calculation to convert counts to log2 cpm
-
-log2_cpm_tbl <- log2_cpm %>% #We are now converting this log2_cpm function data matrix back to a data frame under the tibble library
-  as.data.frame() %>%
+log2_cpm <- cpm(Ensembl_matrix, log = TRUE) %>% 
+  as.data.frame() %>% 
   rownames_to_column("genes") %>%
   as_tibble()
 
@@ -118,7 +117,7 @@ ggplot(metadata, aes(x=Species,y=Mapped_Reads))+
 ```{r Making Boxplot showing distributions of gene counts}
 
 # The functions below manipulate the reorganized data frame from above to make a box plot showing the RNA count distributions for each sample
-Ensembl_ID_rownames %>% 
+Ensembl_df %>% 
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
   mutate(count_distributions = as.numeric(count_distributions)) %>%
@@ -140,7 +139,7 @@ ggplot(., aes(x= Samples, y=count_distributions))+
 
 ```{r A Boxplot of Continuous Count values}
 
-better_genecount_boxplot <- Ensembl_ID_rownames %>% 
+better_genecount_boxplot <- Ensembl_df %>% 
   rownames_to_column("genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "count_distributions") %>% 
   mutate(count_distributions = as.numeric(count_distributions)) %>% 
@@ -162,14 +161,14 @@ ggplot(better_genecount_boxplot, aes(x = Condition, y = count_distributions + 1)
 
 ```{r A Boxplot of Log2 CPM values}
 
-better_log2cpm_boxplot <- log2_cpm_tbl %>% 
+log2cpm_metadata <- log2_cpm %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm_values") %>% 
   mutate(log2cpm_values = as.numeric(log2cpm_values)) %>% 
   left_join(metadata, by = c("Samples" = "SampleName"))
 
 #head(better_log2cpm_boxplot)
 
-ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
+ggplot(log2cpm_metadata, aes(x = Condition, y = log2cpm_values)) +
   geom_boxplot() +
   labs(title = "Log2 CPM Values",y="Log2 CPM Distributions")+
   theme_bw()+
@@ -184,20 +183,9 @@ ggplot(better_log2cpm_boxplot, aes(x = Condition, y = log2cpm_values)) +
 
 #### Histograms showing distributions of log2 CPM RNA counts
 
-```{r Converting the Log2 cpm matrix into tidy format}
-
-log2_cpm_tbl <- log2_cpm %>%
-  as.data.frame() %>%
-  rownames_to_column("genes") %>%
-  as_tibble()
-
-#head(log2_cpm_tbl)
-
-```
-
 ```{r All samples Log2CPM distributions put in histogram}
 
-log2_cpm_histogram <- log2_cpm_tbl %>%
+log2_cpm_histogram <- log2_cpm %>%
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm")
 
 ggplot(log2_cpm_histogram, aes(x = log2cpm)) +
@@ -252,9 +240,17 @@ ggplot(log2_cpm_histogram,
 
 ```{r Filtering out lowly expressed genes where log2cpm is less than zero}
 
-gene_means <- rowMeans(log2_cpm)
-  filtered_log2_cpm <- log2_cpm[gene_means > 0, ]
-  # this code output the number of rows, i.e: the number of genes where log2  0
+gene_means <- log2_cpm %>% 
+  column_to_rownames(var = "genes") %>% 
+  rowMeans()
+
+filtered_counts <- Ensembl_matrix[gene_means > 0, ]
+
+filtered_log2_cpm <- cpm(filtered_counts, log = TRUE)
+
+#head(filtered_log2_cpm)
+
+  # this code output the number of rows, i.e: the number of genes where log2 > 0
   #nrow(filtered_log2_cpm)
   # this code outputs the difference between rows of the df log2_cpm, unfiltered from the rows of the df filtered_log2_cpm, which is the number of genes that were removed from filtering, as in the number of genes removed where log2 cpm < 0
   #nrow(log2_cpm) - nrow(filtered_log2_cpm)
@@ -262,18 +258,15 @@ gene_means <- rowMeans(log2_cpm)
 # Before filtering
   before_tbl <- log2_cpm %>%
   as.data.frame() %>%
-  rownames_to_column("genes") %>%
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm") %>%
   mutate(Filter = "Before")
 
 # After filtering
   after_tbl <- filtered_log2_cpm %>%
   as.data.frame() %>%
-  rownames_to_column("genes") %>%
+  rownames_to_column(var = "genes") %>% 
   pivot_longer(-genes, names_to = "Samples", values_to = "log2cpm") %>%
   mutate(Filter = "After")
-  
-head(after_tbl)
 
 # This combines the before and after tables to visualize the original and filtered cpm frequency values 
 combined_tbl <- bind_rows(before_tbl, after_tbl)
@@ -328,9 +321,9 @@ lookup_table <- counts %>%
 
 ```{r Showing MyFavGene log2 cpm counts via treatment condition and across species}
 
-#head(log2_cpm_tbl)
+#head(log2_cpm)
 
-MyFavGene_tbl <- log2_cpm_tbl %>% 
+MyFavGene_tbl <- log2_cpm %>% 
   filter(genes %in% c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"))
 
 head(MyFavGene_tbl)
@@ -367,9 +360,9 @@ ggplot(MyFavGene_plot, aes(x = Treatment, y = log2cpm)) +
 
 ```{r Showing TNNT2 log2 cpm counts via treatment condition and across species, eval=FALSE, include=FALSE}
 
-#head(log2_cpm_tbl)
+#head(log2_cpm)
 
-TNNT2_tbl <- log2_cpm_tbl %>% 
+TNNT2_tbl <- log2_cpm %>% 
   filter(genes == "ENSG00000118194")
 
 #head(TNNT2_tbl)
@@ -436,7 +429,7 @@ ggplot(gene_plot, aes(x = Treatment, y = log2cpm)) +
 
 #Note that the capitalized X and lowercase X are important, make sure to distinguish between the cases here!
 
-lapply(X = c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"), FUN = function(x) {plot_my_genes(log2_cpm_tbl, x)})
+lapply(X = c("ENSG00000118194", "ENSG00000169245", "ENSG00000115415", "ENSG00000179583", "ENSG00000197442", "ENSG00000053918"), FUN = function(x) {plot_my_genes(log2_cpm, x)})
 
 ```
 
@@ -451,7 +444,7 @@ after_filter_with_metadata <- log2_filtered_df %>%
   dplyr::select(genes, log2cpm, Condition) %>% 
   dplyr::filter(Condition %in% c("C_VEH_C2", condition_name))
 
-wide_scatter <-after_filter_with_metadata %>%
+wide_scatter <- after_filter_with_metadata %>%
   pivot_wider(names_from = Condition, values_from = log2cpm) %>% 
   ggplot(., aes(x = C_VEH_C2, y = .data[[condition_name]])) +
   geom_point() +
@@ -460,21 +453,25 @@ wide_scatter <-after_filter_with_metadata %>%
 }
 ```
 
+
 ```{r This code calls the scatter_function from above and applies a list that I have provided below, fig.height=5, fig.width=7}
 lapply(X = c("C_VEH_C2R", "C_VEH_C3", "C_IFNy_C2", "H_VEH_H2"), FUN = function(x) {scatter_function(after_tbl, x)})
 ```
 
 ```{r}
-spearman_matrix <- after_tbl %>% 
+spearman_df <- after_tbl %>% 
   left_join(metadata, by = c("Samples" = "SampleName")) %>% 
-  select(genes, log2cpm, Condition) %>% 
+  select(genes, log2cpm, Condition) %>%
   pivot_wider(names_from = Condition, values_from = log2cpm) %>% 
   column_to_rownames(var = "genes")
-head(spearman_matrix)
+
+#head(spearman_df)
+
 ```
 
+#### Heatmap of Spearman Correlations
 
-```{r This is code to make a heatmap of log2 cpm counts for each sample, fig.width=7, fig.height=8}
+```{r This is code to make a heatmap of log2 cpm counts for each sample, fig.width=7, fig.height=5.5}
 
 attribute_labels_df <- metadata %>%
    select(Sex, Species, Individual, Treatment, Condition) %>%
@@ -483,7 +480,7 @@ attribute_labels_df <- metadata %>%
 #head(attribute_labels_df)
  
  spearman_cor <- cor(
-   spearman_matrix,
+   spearman_df,
    method = "spearman"
  )
  
@@ -492,8 +489,7 @@ attribute_labels_df <- metadata %>%
    names = unique(attribute_labels_df$Individual)
  )
  
- 
- hmp_anno <- HeatmapAnnotation(
+ heatmap_anno <- HeatmapAnnotation(
    Species = attribute_labels_df$Species,
    Sex = attribute_labels_df$Sex,
    Treatment = attribute_labels_df$Treatment,
@@ -526,18 +522,37 @@ attribute_labels_df <- metadata %>%
    height = unit(8, "cm"),
    row_names_gp = gpar(fontsize = 8), 
    column_names_gp = gpar(fontsize = 8), 
-   top_annotation = hmp_anno
+   top_annotation = heatmap_anno
  )
 
+# cluster_verification <- hclust(
+#   dist(
+#   t(spearman_cor)),
+#   method = "complete"
+#   )
+# 
+# plot(cluster_verification)
+# 
+# pheatmap(
+#   spearman_cor,
+#   cluster_cols = cluster_verification
+# )
+# 
+# Heatmap(
+#   spearman_cor,
+#   cluster_columns = as.dendrogram(cluster_verification),
+#   cluster_rows = as.dendrogram(cluster_verification)
+# )
 ```
 
+#### Scree plot for amount of variance explained by principal components
 
 ```{r This code is creating PCA plots to determine factors of variance in samples}
-pca_matrix <- t(spearman_matrix)
-
-pca_plotting <- prcomp(pca_matrix,
-                     scale. = TRUE,
-                     retx = TRUE
+pca_df <- t(spearman_df)
+pca_plotting <- prcomp(pca_df,
+                       center = TRUE,
+                       scale. = FALSE,
+                       retx = TRUE
                      )
 
 
@@ -555,7 +570,7 @@ pca_analysis <- data.frame(
   Variance = pca_variance
 )
 
-#head(pca_analysis)
+head(pca_analysis)
 
 pca_analysis$Samples <- rownames(pca_df)
 
@@ -573,13 +588,15 @@ ggplot(pca_analysis, aes(x = Component , y = Variance)) +
   geom_point() +
   xlab("Principal Components") +
   ylab("Proportion of Variances") +
-  ggtitle(" Analsysis of Components Contributing to Variance") +
+  ggtitle(" Analysis of Components Contributing to Variance") +
   theme_bw()
 
 
 ```
 
-```{r This chunk of code is my attempt to make a function that will plot the PCA plots I am interested with in one go, eval=FALSE, include=FALSE}
+#### Observations on which factors have the most significant effects on principal component variances
+
+```{r This chunk of code is my attempt to make a function that will plot the PCA plots I am interested with in one go}
 
 pca_plot_new <- function(df, pc_x = 1, pc_y = 2, col_var, shape_var, pca_plotting, title = "") {
   
@@ -656,26 +673,23 @@ plot_versus_pc <- function(pca_anno, pc_num, facs) {
   }
 }
 
+#The lines of code below ouput the number of unique labels for each attribute I call from the pca_charts data frame 
 # sapply(c("species", "tx", "ind", "sex"), function(x) {
 #   length(unique(na.omit(pca_charts[[x]])))
 # })
 
 ```
+Here we can see that Species and Individual attributes have the most significant influence over PC1, while the Treatment attribute has the most significant influence over PC2. Sex has some statistical significant influence over PC1, but has a more significant (and likely biological significance) over PC5.
 
-```{r Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest, eval=FALSE, fig.height=8, fig.width=7, include=FALSE}
+```{r Here I will apply the function about to this current function with a list to plot all PCA variance graphs of interest, fig.height=8, fig.width=7}
 
 pca_charts <- pca_anno %>% 
-#  as.data.frame() %>% 
-#  rownames_to_column("sample") %>% 
   separate(Samples, into = c("species","tx","ind")) %>%
   mutate(tx=factor(tx, levels = c("VEH", "IFNy"))) %>% 
-#         ind=factor(time, levels =c("24T","24R","144R"))) %>%
-#  mutate(txtime = paste0(tx, "_", time)) %>% 
-#  mutate(sex=if_else(ind %in% c("Ind1","Ind2"),"F","M"))%>% 
   mutate(sex=factor(Sex, levels=c("F","M")))
 
-facs <- c("species", "tx", "ind", "sex")
-names(facs) <- c("Species", "Treatment", "Individual","Sex")
+facs <- c("species", "sex", "tx", "ind")
+names(facs) <- c("Species", "Sex", "Treatment","Individual")
 
 plots_of_pcas <- lapply(names(facs), function(f_label) {
   f <- facs[f_label]
@@ -685,28 +699,28 @@ plots_of_pcas <- lapply(names(facs), function(f_label) {
   f_v_pc4 <- plot_versus_pc(pca_charts, 4, f)
   f_v_pc5 <- plot_versus_pc(pca_charts, 5, f)
   f_v_pc6 <- plot_versus_pc(pca_charts, 6, f)
-  f_v_pc7 <- plot_versus_pc(pca_charts, 7, f)
-  f_v_pc8 <- plot_versus_pc(pca_charts, 8, f)
 
-  grid.arrange(f_v_pc1, f_v_pc2, f_v_pc3, f_v_pc4, f_v_pc5, f_v_pc6, f_v_pc7, f_v_pc8, ncol = 2, top = paste0(f_label," PCA Analyses"))
+  grid.arrange(f_v_pc1, f_v_pc2, f_v_pc3, f_v_pc4, f_v_pc5, f_v_pc6, ncol = 2, top = paste0(f_label," PCA Analyses"))
 })
-
-#Significant PCs for factors: species, pc1; treatment, pc4, pc5; individual, pc 1,2,3,6,7,8; sex, pc1, pc5
 
 ```
 
-```{r This chunk of code is my attempt at creating PCA plots to illustrate which factors contribute to varience between samples, eval=FALSE, include=FALSE}
+#### PCA plot demonstrating Species/Sex/Individual (PC1) and Treatment (PC2) stratification
+
+```{r This chunk of code is my attempt at creating PCA plots to illustrate which factors contribute to varience between samples}
 
 ggplot(
   pca_anno,
   aes(
     x = PC1,
-    y = PC4,
+    y = PC2,
     color = Species,
     shape = Treatment
   )
 ) +
   geom_point(size = 4) +
+  geom_text_repel(
+    aes(label = Samples), size = 2.5) +
   labs(
     title = "PCA of RNA-seq Samples",
     x = paste0(
@@ -715,8 +729,8 @@ ggplot(
       "% variance"
     ),
     y = paste0(
-      "PC4: ",
-      round(pca_variance[4], 1),
+      "PC2: ",
+      round(pca_variance[2], 1),
       "% variance"
     )
   ) +
