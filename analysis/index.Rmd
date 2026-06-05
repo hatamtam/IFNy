@@ -10,6 +10,8 @@ editor_options:
 
 Welcome to my research website. This is where my R code will be
 
-### Page 1 
-[First Analysis](https://hatamtam.github.io/IFNy/IFNy_Metadata.html)
+### IFNy RNA Sequencing Analysis Pipeline
+[RNA Sequencing Quality Check](https://hatamtam.github.io/IFNy/IFNy_RNASeq_QualityCheck.html)
+
+[Differentially Expressed Gene Analysis](https://hatamtam.github.io/IFNy/IFNy_DEG_Analysis.html)
 
