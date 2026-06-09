@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-06-05
+<strong>Last updated:</strong> 2026-06-09
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeb667b63e52889656a8e9670b3dc22d37bd0b709btargetblankb667b63a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeafeaf0a2fe2892a64fc69df8a0a6f82d82b8c48ftargetblankafeaf0aa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/b667b63e52889656a8e9670b3dc22d37bd0b709b" target="_blank">b667b63</a>
+<a href="https://github.com/hatamtam/IFNy/tree/afeaf0a2fe2892a64fc69df8a0a6f82d82b8c48f" target="_blank">afeaf0a</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeb667b63e52889656a8e9670b3dc22d37bd0b709btargetblankb667b63a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeafeaf0a2fe2892a64fc69df8a0a6f82d82b8c48ftargetblankafeaf0aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/b667b63e52889656a8e9670b3dc22d37bd0b709b" target="_blank">b667b63</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/afeaf0a2fe2892a64fc69df8a0a6f82d82b8c48f" target="_blank">afeaf0a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -618,6 +618,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/hatamtam/IFNy/blob/afeaf0a2fe2892a64fc69df8a0a6f82d82b8c48f/analysis/IFNy_DEG_Analysis.Rmd" target="_blank">afeaf0a</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-09
+</td>
+<td>
+wflow_publish("analysis/IFNy_DEG_Analysis.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/c93e8271a03e9251ea755ed2713c7eeb2a0c8264/docs/IFNy_DEG_Analysis.html" target="_blank">c93e827</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-05
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/hatamtam/IFNy/blob/b667b63e52889656a8e9670b3dc22d37bd0b709b/analysis/IFNy_DEG_Analysis.Rmd" target="_blank">b667b63</a>
 </td>
 <td>
@@ -661,6 +695,110 @@ library(ComplexHeatmap)
 library(RColorBrewer)
 library(gridExtra)
 library(ggrepel)</code></pre>
+<p>Reading in files:</p>
+<pre class="r"><code>metadata &lt;- readRDS(&quot;data/metadata_IFNy.RDS&quot;)
+counts &lt;- readRDS(&quot;data/counts_IFNy.RDS&quot;)
+
+raw_counts &lt;- counts %&gt;% 
+  dplyr::select(-c(Entrez_ID, Symbol)) %&gt;% 
+  as.data.frame() %&gt;% 
+  pivot_longer(-Ensemble, names_to = &quot;Samples&quot;, values_to = &quot;raw_counts&quot;) %&gt;% 
+  mutate(raw_counts = as.numeric(raw_counts)) %&gt;% 
+  left_join(metadata, by = c(&quot;Samples&quot; = &quot;SampleName&quot;)) %&gt;% 
+  select(Ensemble, raw_counts, Condition) %&gt;% 
+  pivot_wider(names_from = Condition, values_from = raw_counts) %&gt;% 
+  column_to_rownames(&quot;Ensemble&quot;)</code></pre>
+<p>Converting to Log2 CPM (in case this is needed):</p>
+<pre class="r"><code>raw_log2cpm &lt;- cpm(raw_counts, log = TRUE)
+filtered_raw_counts &lt;- raw_counts[rowMeans(raw_log2cpm)&gt; 0,]
+
+dim(filtered_raw_counts)</code></pre>
+<pre><code>[1] 13456    24</code></pre>
+<pre class="r"><code>str(filtered_raw_counts)</code></pre>
+<pre><code>&#39;data.frame&#39;:   13456 obs. of  24 variables:
+ $ C_IFNy_C1 : num  1136 1263 1909 785 98 ...
+ $ C_VEH_C1  : num  1963 851 1608 976 105 ...
+ $ H_IFNy_H2 : num  1732 3214 3058 1063 105 ...
+ $ H_VEH_H2  : num  2035 2395 2456 1184 125 ...
+ $ C_IFNy_C2 : num  840 1221 1641 1134 126 ...
+ $ C_VEH_C2  : num  1168 748 1349 1457 121 ...
+ $ H_IFNy_H6 : num  610 7787 3352 798 105 ...
+ $ H_VEH_H6  : num  914 4206 2128 863 136 ...
+ $ C_IFNy_C3 : num  1941 1061 2933 962 175 ...
+ $ C_VEH_C3  : num  3620 601 2208 985 171 ...
+ $ H_IFNy_H1 : num  199 9352 3080 830 46 ...
+ $ H_VEH_H1  : num  301 4140 2183 1473 38 ...
+ $ C_IFNy_C5 : num  1791 2209 2949 586 74 ...
+ $ C_VEH_C5  : num  3755 1418 3333 896 122 ...
+ $ H_IFNy_H3 : num  86 2084 2811 845 90 ...
+ $ H_VEH_H3  : num  54 1334 1930 1015 126 ...
+ $ C_IFNy_C4 : num  3282 582 3979 943 168 ...
+ $ C_VEH_C4  : num  5099 326 2472 824 136 ...
+ $ H_IFNy_H4 : num  113 2641 2699 1034 188 ...
+ $ H_VEH_H4  : num  152 2258 2388 1590 203 ...
+ $ C_IFNy_C2R: num  697 2531 1857 1030 125 ...
+ $ C_VEH_C2R : num  978 1441 1195 1392 106 ...
+ $ H_IFNy_H5 : num  339 2051 3007 844 127 ...
+ $ H_VEH_H5  : num  280 1676 2582 1170 130 ...</code></pre>
+<p>Selecting only for Chimps:</p>
+<pre class="r"><code># chimp_meta &lt;- metadata %&gt;% 
+#   filter(
+#     Species == &quot;C&quot;
+#     )
+# 
+# 
+# chimp_counts &lt;- raw_counts %&gt;%
+#   dplyr::select(Ensemble,
+#     all_of(chimp_meta$Condition)
+#   )</code></pre>
+<pre class="r"><code>dge &lt;- DGEList(
+  counts = filtered_raw_counts,
+  group = metadata$Cond
+  )
+
+dge &lt;- calcNormFactors(dge,
+                       method = &quot;TMM&quot;
+                       )
+metadata$Cond2 &lt;- metadata$Cond
+metadata$Cond2 &lt;- gsub(&quot;_R$&quot;, &quot;&quot;, metadata$Cond2)
+
+design &lt;- model.matrix(~0 + Cond2, data = metadata)
+colnames(design) &lt;- gsub(&quot;^Cond2&quot;, &quot;&quot;, colnames(design))
+
+cor_fit &lt;- duplicateCorrelation(object = dge$counts,
+                                design = design,
+                                block = metadata$Individual
+                                )
+
+voom_trend &lt;- voom(dge,
+                   design,
+                   block = metadata$Individual, 
+                   correlation = cor_fit$consensus.correlation,
+                   plot = TRUE)</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/unnamed-chunk-5-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit &lt;- lmFit(voom_trend, design, block = metadata$Individual,
+             correlation = cor_fit$consensus.correlation)
+
+#colnames(fit$coefficients)
+contrast_matrix &lt;- makeContrasts(
+  V.Treatment_H = H_IFNy - H_VEH,
+  V.Treatment_C = C_IFNy - C_VEH,
+  V.Species_IFNy = H_IFNy - C_IFNy,
+  V.Species_VEH = H_VEH - C_VEH,
+  levels = design
+)
+
+fit2 &lt;- contrasts.fit(fit, contrast_matrix)
+efit2 &lt;- eBayes(fit2)
+signif_gene_results = decideTests(efit2, adjust.method = &quot;BH&quot;, p.value = 0.05)
+
+summary(signif_gene_results)</code></pre>
+<pre><code>       V.Treatment_H V.Treatment_C V.Species_IFNy V.Species_VEH
+Down            1093          1590           3001          3304
+NotSig         11047         10437           7386          6987
+Up              1316          1429           3069          3165</code></pre>
+<pre class="r"><code>plotSA(efit2, main = &quot;Mean-variance final model trend&quot;)</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/Chunk%20of%20code%20observing%20number%20of%20DEGs%20across%20treatment-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
