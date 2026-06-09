@@ -40,3 +40,209 @@ library(RColorBrewer)
 library(gridExtra)
 library(ggrepel)
 ```
+
+Reading in files:
+```{r}
+metadata <- readRDS("data/metadata_IFNy.RDS")
+counts <- readRDS("data/counts_IFNy.RDS")
+
+raw_counts <- counts %>% 
+  dplyr::select(-c(Entrez_ID, Symbol)) %>% 
+  as.data.frame() %>% 
+  pivot_longer(-Ensemble, names_to = "Samples", values_to = "raw_counts") %>% 
+  mutate(raw_counts = as.numeric(raw_counts)) %>% 
+  left_join(metadata, by = c("Samples" = "SampleName")) %>% 
+  select(Ensemble, raw_counts, Condition) %>% 
+  pivot_wider(names_from = Condition, values_from = raw_counts) %>% 
+  column_to_rownames("Ensemble")
+
+
+```
+
+Converting to Log2 CPM (in case this is needed):
+```{r}
+raw_log2cpm <- cpm(raw_counts, log = TRUE)
+filtered_raw_counts <- raw_counts[rowMeans(raw_log2cpm)> 0,]
+
+dim(filtered_raw_counts)
+str(filtered_raw_counts)
+```
+Selecting only for Chimps:
+```{r}
+# chimp_meta <- metadata %>% 
+#   filter(
+#     Species == "C"
+#     )
+# 
+# 
+# chimp_counts <- raw_counts %>%
+#   dplyr::select(Ensemble,
+#     all_of(chimp_meta$Condition)
+#   )
+
+```
+
+```{r}
+
+dge <- DGEList(
+  counts = filtered_raw_counts,
+  group = metadata$Cond
+  )
+
+dge <- calcNormFactors(dge,
+                       method = "TMM"
+                       )
+metadata$Cond2 <- metadata$Cond
+metadata$Cond2 <- gsub("_R$", "", metadata$Cond2)
+
+design <- model.matrix(~0 + Cond2, data = metadata)
+colnames(design) <- gsub("^Cond2", "", colnames(design))
+
+cor_fit <- duplicateCorrelation(object = dge$counts,
+                                design = design,
+                                block = metadata$Individual
+                                )
+
+voom_trend <- voom(dge,
+                   design,
+                   block = metadata$Individual, 
+                   correlation = cor_fit$consensus.correlation,
+                   plot = TRUE)
+```
+
+```{r Chunk of code observing number of DEGs across treatment}
+fit <- lmFit(voom_trend, design, block = metadata$Individual,
+             correlation = cor_fit$consensus.correlation)
+
+#colnames(fit$coefficients)
+contrast_matrix <- makeContrasts(
+  V.Treatment_H = H_IFNy - H_VEH,
+  V.Treatment_C = C_IFNy - C_VEH,
+  V.Species_IFNy = H_IFNy - C_IFNy,
+  V.Species_VEH = H_VEH - C_VEH,
+  levels = design
+)
+
+fit2 <- contrasts.fit(fit, contrast_matrix)
+efit2 <- eBayes(fit2)
+signif_gene_results = decideTests(efit2, adjust.method = "BH", p.value = 0.05)
+
+summary(signif_gene_results)
+plotSA(efit2, main = "Mean-variance final model trend")
+
+```
+
+
+```{r Volcano Plots comparing treatment conditions within the same species using limma, eval=FALSE, fig.height=4, fig.width=6, include=FALSE}
+
+Human_IFNy_vs_VEH <- topTable(efit2, coef = "V.Treatment_H", adjust.method = "BH", p.value = 1, number = Inf)
+Chimp_IFNy_vs_VEH <- topTable(efit2, coef = "V.Treatment_C", adjust.method = "BH", p.value = 1, number = Inf)
+IFNy_Human_vs_Chimp <- topTable(efit2, coef = "V.Species_IFNy", adjust.method = "BH", p.value = 1, number = Inf)
+VEH_Human_vs_Chimp <- topTable(efit2, coef = "V.Species_VEH", adjust.method = "BH", p.value = 1, number = Inf)
+
+toptable_list <- list(Human_IFNy_vs_VEH, Chimp_IFNy_vs_VEH, IFNy_Human_vs_Chimp, VEH_Human_vs_Chimp)
+comparison_name_list <- list("Human: IFNy vs VEH", "Chimp: IFNy vs VEH", "IFNy: Human vs Chimp", "VEH: Human vs Chimp")
+
+generate_volcano_plot <- function(toptable, comparison_name) {
+
+  volcano_colors <- toptable %>%
+    rownames_to_column("Genes") %>%
+    left_join(counts %>% 
+                select (Ensemble, Symbol),
+              by = c("Genes" = "Ensemble")) %>% 
+    mutate(
+    id_label = ifelse(
+      is.na(Symbol),
+      Genes,
+      Symbol
+    )
+  ) %>% 
+    mutate(
+      neglog10AdjP = -log10(pmax(adj.P.Val, 1e-300)),
+      color_key = case_when(
+        adj.P.Val < 0.05 & logFC > 0  ~ "Up",
+        adj.P.Val < 0.05 & logFC < 0 ~ "Down",
+        TRUE ~ "NS"
+      )
+    )
+
+  top_10_genes <- volcano_colors %>%
+  arrange(adj.P.Val) %>%
+  slice_head(n = 10)
+  
+  gene_of_interest <- volcano_colors %>% 
+    dplyr::filter(id_label == "EOMES")
+
+  p <- ggplot(
+    volcano_colors,
+    aes(x = logFC, y = neglog10AdjP)
+    ) +
+    geom_point(
+      aes(color = color_key),
+      size = 2,
+      alpha = 0.6
+    ) +
+    
+    scale_x_continuous(
+    limits = c(-12, 12),
+    breaks = seq(-12, 12, by = 6)
+    ) +
+    scale_y_continuous(
+    limits = c(0, 18),
+    breaks = seq(0, 18, by = 6)
+    ) +
+    
+    # geom_vline(
+    # xintercept = c(-1,1),
+    # linetype = "dashed"
+    # ) +
+    # geom_hline(
+    # yintercept = -log10(0.05),
+    # linetype = "dashed"
+    # ) +
+    geom_text_repel(
+      # data = top_10_genes,
+      data = gene_of_interest,
+      aes(label = id_label),
+      size = 3,
+      max.overlaps = Inf,
+      box.padding = 0.5
+    ) +
+    
+    scale_color_manual(
+      values = c(
+        "Up" = "red",
+        "Down" = "blue",
+        "NS" = "grey50"
+      )
+    ) +
+    labs(
+      title = comparison_name,
+      x = "log2FC",
+      y = "-log10(Adj.P-value)"
+    ) +
+    theme_classic() +
+    
+    theme(
+      plot.title = element_text(hjust = 0.6),
+      text = element_text(size = 12)
+    ) 
+  
+    list(
+      plot = p,
+      #top10 = top_10_genes,
+      interesting_gene = gene_of_interest
+      )
+}
+for (i in seq_along(toptable_list)) {
+  # Generate and display the results
+  results <- generate_volcano_plot(
+    toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+  #print(results$top10)
+  print(results$interesting_gene)
+  print(results$plot) # Print the plot to view
+}
+```
+
