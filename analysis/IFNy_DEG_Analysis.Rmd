@@ -67,20 +67,6 @@ filtered_raw_counts <- raw_counts[rowMeans(raw_log2cpm)> 0,]
 dim(filtered_raw_counts)
 str(filtered_raw_counts)
 ```
-Selecting only for Chimps:
-```{r}
-# chimp_meta <- metadata %>% 
-#   filter(
-#     Species == "C"
-#     )
-# 
-# 
-# chimp_counts <- raw_counts %>%
-#   dplyr::select(Ensemble,
-#     all_of(chimp_meta$Condition)
-#   )
-
-```
 
 ```{r}
 
@@ -133,7 +119,7 @@ plotSA(efit2, main = "Mean-variance final model trend")
 ```
 
 
-```{r Volcano Plots comparing treatment conditions within the same species using limma, eval=FALSE, fig.height=4, fig.width=6, include=FALSE}
+```{r Volcano Plots comparing treatment conditions within the same species using limma, fig.height=4, fig.width=6}
 
 Human_IFNy_vs_VEH <- topTable(efit2, coef = "V.Treatment_H", adjust.method = "BH", p.value = 1, number = Inf)
 Chimp_IFNy_vs_VEH <- topTable(efit2, coef = "V.Treatment_C", adjust.method = "BH", p.value = 1, number = Inf)
@@ -170,8 +156,8 @@ generate_volcano_plot <- function(toptable, comparison_name) {
   arrange(adj.P.Val) %>%
   slice_head(n = 10)
   
-  gene_of_interest <- volcano_colors %>% 
-    dplyr::filter(id_label == "EOMES")
+  # gene_of_interest <- volcano_colors %>% 
+  #   dplyr::filter(id_label == "MCP1")
 
   p <- ggplot(
     volcano_colors,
@@ -183,13 +169,9 @@ generate_volcano_plot <- function(toptable, comparison_name) {
       alpha = 0.6
     ) +
     
-    scale_x_continuous(
-    limits = c(-12, 12),
-    breaks = seq(-12, 12, by = 6)
-    ) +
-    scale_y_continuous(
-    limits = c(0, 18),
-    breaks = seq(0, 18, by = 6)
+   coord_cartesian(
+      xlim = c(-12, 12),
+      ylim = c(0, 18)
     ) +
     
     # geom_vline(
@@ -200,9 +182,10 @@ generate_volcano_plot <- function(toptable, comparison_name) {
     # yintercept = -log10(0.05),
     # linetype = "dashed"
     # ) +
+    
     geom_text_repel(
-      # data = top_10_genes,
-      data = gene_of_interest,
+      data = top_10_genes,
+      #data = gene_of_interest,
       aes(label = id_label),
       size = 3,
       max.overlaps = Inf,
@@ -230,19 +213,55 @@ generate_volcano_plot <- function(toptable, comparison_name) {
   
     list(
       plot = p,
-      #top10 = top_10_genes,
-      interesting_gene = gene_of_interest
+      top10 = top_10_genes
+      # ,
+      # interesting_gene = gene_of_interest
       )
 }
+
 for (i in seq_along(toptable_list)) {
-  # Generate and display the results
+  #Generate and display the results
   results <- generate_volcano_plot(
     toptable_list[[i]],
     comparison_name_list[[i]]
   )
-  #print(results$top10)
-  print(results$interesting_gene)
-  print(results$plot) # Print the plot to view
+print(results$top10)
+#print(results$interesting_gene)
+print(results$plot) # Print the plot to view
 }
+#interesting genes: GRAMD2B, ARG2, maybe PITPNM2, CD274 (encodes PD-L1), GBP4
+```
+
+```{r}
+FC_matrix <- subset(efit2$coefficients)
+
+colnames(FC_matrix) <-
+  c("V.Treatment_H",
+    "V.Treatment_C",
+    "V.Species_IFNy",
+    "V.Species_VEH"
+     )
+
+matrix_columns <-
+  data.frame(
+    species = c(rep("Human", 2), rep("Chimp", 2)),
+    treatment = (c(
+      "IFNy", "VEH", "IFNy", "VEH" 
+    )))
+rownames(matrix_columns) <- colnames(FC_matrix)
+
+matrix_colors <-
+  list(
+    species = c("pink", "chocolate4"),
+    treatment = c("yellow1", "lightgreen"))
+
+names(matrix_colors$species) <- unique(matrix_columns$species)
+names(matrix_colors$treatment) <- unique(matrix_columns$treatment)
+
+corr_FC <- cor(FC_matrix)
+
+heatmap_anno <-  HeatmapAnnotation(df = matrix_columns, col = matrix_colors)
+Heatmap(corr_FC, top_annotation = heatmap_anno)
+
 ```
 
