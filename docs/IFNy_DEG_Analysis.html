@@ -390,7 +390,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-06-09
+<strong>Last updated:</strong> 2026-06-10
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeafeaf0a2fe2892a64fc69df8a0a6f82d82b8c48ftargetblankafeaf0aa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree2ffbdedb755fec808d94aa65f11288521453fe84targetblank2ffbdeda">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/afeaf0a2fe2892a64fc69df8a0a6f82d82b8c48f" target="_blank">afeaf0a</a>
+<a href="https://github.com/hatamtam/IFNy/tree/2ffbdedb755fec808d94aa65f11288521453fe84" target="_blank">2ffbded</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeafeaf0a2fe2892a64fc69df8a0a6f82d82b8c48ftargetblankafeaf0aa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree2ffbdedb755fec808d94aa65f11288521453fe84targetblank2ffbdeda"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/afeaf0a2fe2892a64fc69df8a0a6f82d82b8c48f" target="_blank">afeaf0a</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/2ffbdedb755fec808d94aa65f11288521453fe84" target="_blank">2ffbded</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -561,7 +561,6 @@ Untracked files:
     Untracked:  Average_Mapped_Reads.png
     Untracked:  Individual_Mapped_Reads.png
     Untracked:  Indiviual_Mapped_Reads.png
-    Untracked:  analysis/IFNy_RNASeq_QualityCheck.Rmd
     Untracked:  better_log2cpm_boxplot.png
     Untracked:  log2_cpm_histogram.png
     Untracked:  log2_cpm_tibble.png
@@ -613,6 +612,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/2ffbdedb755fec808d94aa65f11288521453fe84/analysis/IFNy_DEG_Analysis.Rmd" target="_blank">2ffbded</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-10
+</td>
+<td>
+wflow_publish("analysis/IFNy_DEG_Analysis.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/d31946a63ea12f586de4bd2ea634cd2388feb38f/docs/IFNy_DEG_Analysis.html" target="_blank">d31946a</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-09
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -740,17 +773,6 @@ dim(filtered_raw_counts)</code></pre>
  $ C_VEH_C2R : num  978 1441 1195 1392 106 ...
  $ H_IFNy_H5 : num  339 2051 3007 844 127 ...
  $ H_VEH_H5  : num  280 1676 2582 1170 130 ...</code></pre>
-<p>Selecting only for Chimps:</p>
-<pre class="r"><code># chimp_meta &lt;- metadata %&gt;% 
-#   filter(
-#     Species == &quot;C&quot;
-#     )
-# 
-# 
-# chimp_counts &lt;- raw_counts %&gt;%
-#   dplyr::select(Ensemble,
-#     all_of(chimp_meta$Condition)
-#   )</code></pre>
 <pre class="r"><code>dge &lt;- DGEList(
   counts = filtered_raw_counts,
   group = metadata$Cond
@@ -775,7 +797,7 @@ voom_trend &lt;- voom(dge,
                    block = metadata$Individual, 
                    correlation = cor_fit$consensus.correlation,
                    plot = TRUE)</code></pre>
-<p><img src="figure/IFNy_DEG_Analysis.Rmd/unnamed-chunk-5-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/unnamed-chunk-4-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>fit &lt;- lmFit(voom_trend, design, block = metadata$Individual,
              correlation = cor_fit$consensus.correlation)
 
@@ -799,6 +821,314 @@ NotSig         11047         10437           7386          6987
 Up              1316          1429           3069          3165</code></pre>
 <pre class="r"><code>plotSA(efit2, main = &quot;Mean-variance final model trend&quot;)</code></pre>
 <p><img src="figure/IFNy_DEG_Analysis.Rmd/Chunk%20of%20code%20observing%20number%20of%20DEGs%20across%20treatment-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-no-spaces-Chunk-of-code-observing-number-of-DEGs-across-treatment-1">
+Past versions of "Chunk of code observing number of DEGs across
+treatment-1.png"
+</button>
+</p>
+<div
+id="fig-no-spaces-Chunk-of-code-observing-number-of-DEGs-across-treatment-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/d31946a63ea12f586de4bd2ea634cd2388feb38f/docs/figure/IFNy_DEG_Analysis.Rmd/Chunk of code observing number of DEGs across treatment-1.png" target="_blank">d31946a</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>Human_IFNy_vs_VEH &lt;- topTable(efit2, coef = &quot;V.Treatment_H&quot;, adjust.method = &quot;BH&quot;, p.value = 1, number = Inf)
+Chimp_IFNy_vs_VEH &lt;- topTable(efit2, coef = &quot;V.Treatment_C&quot;, adjust.method = &quot;BH&quot;, p.value = 1, number = Inf)
+IFNy_Human_vs_Chimp &lt;- topTable(efit2, coef = &quot;V.Species_IFNy&quot;, adjust.method = &quot;BH&quot;, p.value = 1, number = Inf)
+VEH_Human_vs_Chimp &lt;- topTable(efit2, coef = &quot;V.Species_VEH&quot;, adjust.method = &quot;BH&quot;, p.value = 1, number = Inf)
+
+toptable_list &lt;- list(Human_IFNy_vs_VEH, Chimp_IFNy_vs_VEH, IFNy_Human_vs_Chimp, VEH_Human_vs_Chimp)
+comparison_name_list &lt;- list(&quot;Human: IFNy vs VEH&quot;, &quot;Chimp: IFNy vs VEH&quot;, &quot;IFNy: Human vs Chimp&quot;, &quot;VEH: Human vs Chimp&quot;)
+
+generate_volcano_plot &lt;- function(toptable, comparison_name) {
+
+  volcano_colors &lt;- toptable %&gt;%
+    rownames_to_column(&quot;Genes&quot;) %&gt;%
+    left_join(counts %&gt;% 
+                select (Ensemble, Symbol),
+              by = c(&quot;Genes&quot; = &quot;Ensemble&quot;)) %&gt;% 
+    mutate(
+    id_label = ifelse(
+      is.na(Symbol),
+      Genes,
+      Symbol
+    )
+  ) %&gt;% 
+    mutate(
+      neglog10AdjP = -log10(pmax(adj.P.Val, 1e-300)),
+      color_key = case_when(
+        adj.P.Val &lt; 0.05 &amp; logFC &gt; 0  ~ &quot;Up&quot;,
+        adj.P.Val &lt; 0.05 &amp; logFC &lt; 0 ~ &quot;Down&quot;,
+        TRUE ~ &quot;NS&quot;
+      )
+    )
+
+  top_10_genes &lt;- volcano_colors %&gt;%
+  arrange(adj.P.Val) %&gt;%
+  slice_head(n = 10)
+  
+  # gene_of_interest &lt;- volcano_colors %&gt;% 
+  #   dplyr::filter(id_label == &quot;MCP1&quot;)
+
+  p &lt;- ggplot(
+    volcano_colors,
+    aes(x = logFC, y = neglog10AdjP)
+    ) +
+    geom_point(
+      aes(color = color_key),
+      size = 2,
+      alpha = 0.6
+    ) +
+    
+   coord_cartesian(
+      xlim = c(-12, 12),
+      ylim = c(0, 18)
+    ) +
+    
+    # geom_vline(
+    # xintercept = c(-1,1),
+    # linetype = &quot;dashed&quot;
+    # ) +
+    # geom_hline(
+    # yintercept = -log10(0.05),
+    # linetype = &quot;dashed&quot;
+    # ) +
+    
+    geom_text_repel(
+      data = top_10_genes,
+      #data = gene_of_interest,
+      aes(label = id_label),
+      size = 3,
+      max.overlaps = Inf,
+      box.padding = 0.5
+    ) +
+    
+    scale_color_manual(
+      values = c(
+        &quot;Up&quot; = &quot;red&quot;,
+        &quot;Down&quot; = &quot;blue&quot;,
+        &quot;NS&quot; = &quot;grey50&quot;
+      )
+    ) +
+    labs(
+      title = comparison_name,
+      x = &quot;log2FC&quot;,
+      y = &quot;-log10(Adj.P-value)&quot;
+    ) +
+    theme_classic() +
+    
+    theme(
+      plot.title = element_text(hjust = 0.6),
+      text = element_text(size = 12)
+    ) 
+  
+    list(
+      plot = p,
+      top10 = top_10_genes
+      # ,
+      # interesting_gene = gene_of_interest
+      )
+}
+
+for (i in seq_along(toptable_list)) {
+  #Generate and display the results
+  results &lt;- generate_volcano_plot(
+    toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+print(results$top10)
+#print(results$interesting_gene)
+print(results$plot) # Print the plot to view
+}</code></pre>
+<pre><code>             Genes    logFC  AveExpr        t      P.Value    adj.P.Val
+1  ENSG00000002549 3.203571 7.401712 30.94517 2.619933e-20 3.525382e-16
+2  ENSG00000137628 4.333342 5.697461 28.20482 2.115510e-19 9.488769e-16
+3  ENSG00000115415 4.012905 9.317822 28.21405 2.100011e-19 9.488769e-16
+4  ENSG00000173193 5.361512 6.885933 26.16010 1.143809e-18 3.533589e-15
+5  ENSG00000163840 4.016299 6.213922 25.93597 1.386574e-18 3.533589e-15
+6  ENSG00000138496 4.050195 5.490485 25.78813 1.575619e-18 3.533589e-15
+7  ENSG00000100911 2.467206 5.555743 25.57183 1.901970e-18 3.656130e-15
+8  ENSG00000213928 2.843443 5.555057 24.14638 6.833732e-18 1.062345e-14
+9  ENSG00000125347 5.215535 3.809479 24.10411 7.105460e-18 1.062345e-14
+10 ENSG00000156587 4.540855 5.587779 23.36849 1.414974e-17 1.903988e-14
+          B Symbol id_label neglog10AdjP color_key
+1  36.48874   LAP3     LAP3     15.45279        Up
+2  34.44050  DDX60    DDX60     15.02279        Up
+3  34.06029  STAT1    STAT1     15.02279        Up
+4  32.76972 PARP14   PARP14     14.45178        Up
+5  32.63167  DTX3L    DTX3L     14.45178        Up
+6  32.46591  PARP9    PARP9     14.45178        Up
+7  32.34400  PSME2    PSME2     14.43698        Up
+8  31.07724   IRF9     IRF9     13.97373        Up
+9  30.78013   IRF1     IRF1     13.97373        Up
+10 30.29060 UBE2L6   UBE2L6     13.72034        Up</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/Volcano%20Plots%20comparing%20treatment%20conditions%20within%20the%20same%20species%20using%20limma-1.png" alt="" width="576" style="display: block; margin: auto;" /></p>
+<pre><code>             Genes    logFC  AveExpr        t      P.Value    adj.P.Val
+1  ENSG00000002549 3.844963 7.401712 33.45982 4.476748e-21 6.023912e-17
+2  ENSG00000168394 5.671897 4.073595 30.98248 2.549613e-20 1.715380e-16
+3  ENSG00000185880 2.268241 3.751398 28.93163 1.193790e-19 5.354544e-16
+4  ENSG00000163840 4.047647 6.213922 26.27347 1.038313e-18 3.087645e-15
+5  ENSG00000138496 4.702801 5.490485 26.15653 1.147311e-18 3.087645e-15
+6  ENSG00000137628 5.052641 5.697461 25.90789 1.420570e-18 3.185865e-15
+7  ENSG00000173193 5.275959 6.885933 25.65663 1.766350e-18 3.395428e-15
+8  ENSG00000115415 3.321903 9.317822 25.14686 2.765165e-18 4.651007e-15
+9  ENSG00000100911 2.458711 5.555743 24.73801 3.985744e-18 5.932554e-15
+10 ENSG00000184371 2.175170 5.761412 24.62628 4.408854e-18 5.932554e-15
+          B Symbol id_label neglog10AdjP color_key
+1  38.13235   LAP3     LAP3     16.22012        Up
+2  36.43113   TAP1     TAP1     15.76564        Up
+3  35.09492 TRIM69   TRIM69     15.27128        Up
+4  32.94300  DTX3L    DTX3L     14.51037        Up
+5  32.72571  PARP9    PARP9     14.51037        Up
+6  32.47051  DDX60    DDX60     14.49677        Up
+7  32.38818 PARP14   PARP14     14.46911        Up
+8  31.85363  STAT1    STAT1     14.33245        Up
+9  31.61657  PSME2    PSME2     14.22676        Up
+10 31.51607   CSF1     CSF1     14.22676        Up</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/Volcano%20Plots%20comparing%20treatment%20conditions%20within%20the%20same%20species%20using%20limma-2.png" alt="" width="576" style="display: block; margin: auto;" /></p>
+<pre><code>             Genes     logFC  AveExpr         t      P.Value    adj.P.Val
+1  ENSG00000231074 -8.148369 1.449128 -31.11956 2.307719e-20 3.105266e-16
+2  ENSG00000204386 -7.556737 2.562687 -29.43215 8.113809e-20 5.458971e-16
+3  ENSG00000256537 -8.896903 1.001165 -28.79681 1.326079e-19 5.947908e-16
+4  ENSG00000169926 -3.275954 5.614105 -28.06635 2.362875e-19 7.948713e-16
+5  ENSG00000236104 -5.718739 2.012910 -27.78063 2.973408e-19 8.002036e-16
+6  ENSG00000276293 -6.396239 4.106460 -27.31966 4.328618e-19 8.864894e-16
+7  ENSG00000183309 -5.610918 2.772073 -27.24263 4.611642e-19 8.864894e-16
+8  ENSG00000185115 -5.917208 2.235039 -26.46162 8.850238e-19 1.488610e-15
+9  ENSG00000198563 -6.698119 5.072894 -26.17760 1.126825e-18 1.684728e-15
+10 ENSG00000145741  3.456344 5.233032  25.90011 1.430142e-18 1.860675e-15
+          B   Symbol id_label neglog10AdjP color_key
+1  35.48321    HCG18    HCG18     15.50790      Down
+2  34.43542     NEU1     NEU1     15.26289      Down
+3  34.00462 SMIM10L1 SMIM10L1     15.22564      Down
+4  34.39050    KLF13    KLF13     15.09970      Down
+5  33.29137   ZBTB22   ZBTB22     15.09680      Down
+6  33.32512  PIP4K2B  PIP4K2B     15.05233      Down
+7  33.00121   ZNF623   ZNF623     15.05233      Down
+8  32.35146   NSMCE3   NSMCE3     14.82722      Down
+9  32.58130   DDX39B   DDX39B     14.77347      Down
+10 32.60753     BTF3     BTF3     14.73033        Up</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/Volcano%20Plots%20comparing%20treatment%20conditions%20within%20the%20same%20species%20using%20limma-3.png" alt="" width="576" style="display: block; margin: auto;" /></p>
+<pre><code>             Genes     logFC  AveExpr         t      P.Value    adj.P.Val
+1  ENSG00000231074 -8.452523 1.449128 -32.32221 9.794902e-21 1.318002e-16
+2  ENSG00000256537 -9.129135 1.001165 -29.60232 7.125685e-20 4.794161e-16
+3  ENSG00000169926 -3.461282 5.614105 -28.90760 1.216326e-19 5.455627e-16
+4  ENSG00000276293 -6.372244 4.106460 -27.80253 2.921264e-19 6.946767e-16
+5  ENSG00000236104 -5.792587 2.012910 -28.09937 2.301275e-19 6.946767e-16
+6  ENSG00000183309 -5.612428 2.772073 -27.73007 3.097548e-19 6.946767e-16
+7  ENSG00000204386 -6.935122 2.562687 -27.01204 5.580004e-19 1.047321e-15
+8  ENSG00000185115 -6.005454 2.235039 -26.88023 6.226639e-19 1.047321e-15
+9  ENSG00000145741  3.521659 5.233032  26.48547 8.673463e-19 1.296779e-15
+10 ENSG00000198563 -6.586613 5.072894 -26.29174 1.022280e-18 1.375580e-15
+          B   Symbol id_label neglog10AdjP color_key
+1  36.20197    HCG18    HCG18     15.88008      Down
+2  34.54485 SMIM10L1 SMIM10L1     15.31929      Down
+3  35.02401    KLF13    KLF13     15.26316      Down
+4  33.72797  PIP4K2B  PIP4K2B     15.15822      Down
+5  33.51291   ZBTB22   ZBTB22     15.15822      Down
+6  33.40148   ZNF623   ZNF623     15.15822      Down
+7  32.77702     NEU1     NEU1     14.97992      Down
+8  32.66640   NSMCE3   NSMCE3     14.97992      Down
+9  33.09921     BTF3     BTF3     14.88713        Up
+10 32.70394   DDX39B   DDX39B     14.86151      Down</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/Volcano%20Plots%20comparing%20treatment%20conditions%20within%20the%20same%20species%20using%20limma-4.png" alt="" width="576" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#interesting genes: GRAMD2B, ARG2, maybe PITPNM2, CD274 (encodes PD-L1), GBP4</code></pre>
+<pre class="r"><code>FC_matrix &lt;- subset(efit2$coefficients)
+
+colnames(FC_matrix) &lt;-
+  c(&quot;V.Treatment_H&quot;,
+    &quot;V.Treatment_C&quot;,
+    &quot;V.Species_IFNy&quot;,
+    &quot;V.Species_VEH&quot;
+     )
+
+matrix_columns &lt;-
+  data.frame(
+    species = c(rep(&quot;Human&quot;, 2), rep(&quot;Chimp&quot;, 2)),
+    treatment = (c(
+      &quot;IFNy&quot;, &quot;VEH&quot;, &quot;IFNy&quot;, &quot;VEH&quot; 
+    )))
+rownames(matrix_columns) &lt;- colnames(FC_matrix)
+
+matrix_colors &lt;-
+  list(
+    species = c(&quot;pink&quot;, &quot;chocolate4&quot;),
+    treatment = c(&quot;yellow1&quot;, &quot;lightgreen&quot;))
+
+names(matrix_colors$species) &lt;- unique(matrix_columns$species)
+names(matrix_colors$treatment) &lt;- unique(matrix_columns$treatment)
+
+corr_FC &lt;- cor(FC_matrix)
+
+heatmap_anno &lt;-  HeatmapAnnotation(df = matrix_columns, col = matrix_colors)
+Heatmap(corr_FC, top_annotation = heatmap_anno)</code></pre>
+<p><img src="figure/IFNy_DEG_Analysis.Rmd/unnamed-chunk-5-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/d31946a63ea12f586de4bd2ea634cd2388feb38f/docs/figure/IFNy_DEG_Analysis.Rmd/unnamed-chunk-5-1.png" target="_blank">d31946a</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-06-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -844,32 +1174,32 @@ loaded via a namespace (and not attached):
  [7] matrixStats_1.5.0   compiler_4.6.0      getPass_0.2-4      
 [10] png_0.1-9           callr_3.7.6         vctrs_0.7.3        
 [13] shape_1.4.6.1       pkgconfig_2.0.3     crayon_1.5.3       
-[16] fastmap_1.2.0       backports_1.5.1     promises_1.5.0     
-[19] rmarkdown_2.31      tzdb_0.5.0          xfun_0.57          
-[22] cachem_1.1.0        jsonlite_2.0.0      later_1.4.8        
-[25] broom_1.0.13        parallel_4.6.0      cluster_2.1.8.2    
-[28] R6_2.6.1            bslib_0.11.0        stringi_1.8.7      
-[31] car_3.1-5           rpart_4.1.27        jquerylib_0.1.4    
-[34] Rcpp_1.1.1-1.1      iterators_1.0.14    knitr_1.51         
-[37] zoo_1.8-15          base64enc_0.1-6     IRanges_2.46.0     
-[40] httpuv_1.6.17       nnet_7.3-20         timechange_0.4.0   
-[43] tidyselect_1.2.1    rstudioapi_0.18.0   abind_1.4-8        
-[46] yaml_2.3.12         doParallel_1.0.17   codetools_0.2-20   
-[49] processx_3.9.0      lattice_0.22-9      withr_3.0.2        
-[52] S7_0.2.2            evaluate_1.0.5      pwr_1.3-0          
-[55] foreign_0.8-91      circlize_0.4.18     pillar_1.11.1      
-[58] carData_3.0-6       whisker_0.4.1       checkmate_2.3.4    
-[61] foreach_1.5.2       stats4_4.6.0        generics_0.1.4     
-[64] rprojroot_2.1.1     hms_1.1.4           S4Vectors_0.50.1   
-[67] glue_1.8.1          Hmisc_5.2-5         tools_4.6.0        
-[70] data.table_1.18.4   locfit_1.5-9.12     ggsignif_0.6.4     
-[73] fs_2.1.0            cowplot_1.2.0       colorspace_2.1-2   
-[76] patchwork_1.3.2     htmlTable_2.5.0     Formula_1.2-5      
-[79] cli_3.6.6           gtable_0.3.6        rstatix_0.7.3      
-[82] sass_0.4.10         digest_0.6.39       BiocGenerics_0.58.1
-[85] rjson_0.2.23        htmlwidgets_1.6.4   farver_2.1.2       
-[88] htmltools_0.5.9     lifecycle_1.0.5     httr_1.4.8         
-[91] GlobalOptions_0.1.4 statmod_1.5.2      </code></pre>
+[16] fastmap_1.2.0       backports_1.5.1     labeling_0.4.3     
+[19] promises_1.5.0      rmarkdown_2.31      tzdb_0.5.0         
+[22] xfun_0.57           cachem_1.1.0        jsonlite_2.0.0     
+[25] later_1.4.8         broom_1.0.13        parallel_4.6.0     
+[28] cluster_2.1.8.2     R6_2.6.1            bslib_0.11.0       
+[31] stringi_1.8.7       car_3.1-5           rpart_4.1.27       
+[34] jquerylib_0.1.4     Rcpp_1.1.1-1.1      iterators_1.0.14   
+[37] knitr_1.51          zoo_1.8-15          base64enc_0.1-6    
+[40] IRanges_2.46.0      httpuv_1.6.17       nnet_7.3-20        
+[43] timechange_0.4.0    tidyselect_1.2.1    rstudioapi_0.18.0  
+[46] abind_1.4-8         yaml_2.3.12         doParallel_1.0.17  
+[49] codetools_0.2-20    processx_3.9.0      lattice_0.22-9     
+[52] withr_3.0.2         S7_0.2.2            evaluate_1.0.5     
+[55] pwr_1.3-0           foreign_0.8-91      circlize_0.4.18    
+[58] pillar_1.11.1       carData_3.0-6       whisker_0.4.1      
+[61] checkmate_2.3.4     foreach_1.5.2       stats4_4.6.0       
+[64] generics_0.1.4      rprojroot_2.1.1     hms_1.1.4          
+[67] S4Vectors_0.50.1    glue_1.8.1          Hmisc_5.2-5        
+[70] tools_4.6.0         data.table_1.18.4   locfit_1.5-9.12    
+[73] ggsignif_0.6.4      fs_2.1.0            cowplot_1.2.0      
+[76] colorspace_2.1-2    patchwork_1.3.2     htmlTable_2.5.0    
+[79] Formula_1.2-5       cli_3.6.6           gtable_0.3.6       
+[82] rstatix_0.7.3       sass_0.4.10         digest_0.6.39      
+[85] BiocGenerics_0.58.1 rjson_0.2.23        htmlwidgets_1.6.4  
+[88] farver_2.1.2        htmltools_0.5.9     lifecycle_1.0.5    
+[91] httr_1.4.8          GlobalOptions_0.1.4 statmod_1.5.2      </code></pre>
 </div>
 </div>
 </div>
