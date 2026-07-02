@@ -39,7 +39,17 @@ library(ComplexHeatmap)
 library(RColorBrewer)
 library(gridExtra)
 library(ggrepel)
+library(ggVennDiagram)
+library(grid)
+library(ggrepel)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(clusterProfiler)
+library(circlize)
+library(gprofiler2)
 ```
+
+## File Calling
 
 Reading in files:
 ```{r}
@@ -49,12 +59,13 @@ counts <- readRDS("data/counts_IFNy.RDS")
 raw_counts <- counts %>% 
   dplyr::select(-c(Entrez_ID, Symbol)) %>% 
   as.data.frame() %>% 
-  pivot_longer(-Ensemble, names_to = "Samples", values_to = "raw_counts") %>% 
+  rename(., Ensembl = Ensemble) %>% 
+  pivot_longer(-Ensembl, names_to = "Samples", values_to = "raw_counts") %>% 
   mutate(raw_counts = as.numeric(raw_counts)) %>% 
   left_join(metadata, by = c("Samples" = "SampleName")) %>% 
-  select(Ensemble, raw_counts, Condition) %>% 
+  select(Ensembl, raw_counts, Condition) %>% 
   pivot_wider(names_from = Condition, values_from = raw_counts) %>% 
-  column_to_rownames("Ensemble")
+  column_to_rownames("Ensembl")
 
 
 ```
@@ -64,77 +75,161 @@ Converting to Log2 CPM (in case this is needed):
 raw_log2cpm <- cpm(raw_counts, log = TRUE)
 filtered_raw_counts <- raw_counts[rowMeans(raw_log2cpm)> 0,]
 
-dim(filtered_raw_counts)
-str(filtered_raw_counts)
+# dim(filtered_raw_counts)
+# str(filtered_raw_counts)
 ```
 
+
+## Identifying DGEs
 ```{r}
+metadata2 <- metadata %>%
+  filter(!Condition %in% c("C_IFNy_C2R", "C_VEH_C2R"))
 
+filtered_counts2 <- filtered_raw_counts %>%
+  dplyr::select(-c(C_IFNy_C2R, C_VEH_C2R))
+
+# Create DGEList
 dge <- DGEList(
-  counts = filtered_raw_counts,
-  group = metadata$Cond
-  )
+  counts = filtered_counts2
+)
+# TMM normalization
+dge <- calcNormFactors(
+  dge,
+  method = "TMM"
+)
+# Ensuring my factors are set correctly
+metadata2$Species <- relevel(
+  factor(metadata2$Species),
+  ref = "C")
+metadata2$Treatment <- relevel(
+  factor(metadata2$Treatment),
+  ref = "VEH")
+# The code below includes C2R replicate is being considered for normalization, but we are xcluding it, hence why this code is cut out
+# metadata$Cond2 <- metadata$Cond
+# metadata$Cond2 <- gsub("_R$", "", metadata$Cond2)
 
-dge <- calcNormFactors(dge,
-                       method = "TMM"
-                       )
-metadata$Cond2 <- metadata$Cond
-metadata$Cond2 <- gsub("_R$", "", metadata$Cond2)
-
-design <- model.matrix(~0 + Cond2, data = metadata)
-colnames(design) <- gsub("^Cond2", "", colnames(design))
+# in the 'design' object, we would include '+ Cond2' if we are considering C2R replicate in the following calculations
+design <- model.matrix(~ Species * Treatment,
+  data = metadata2
+)
+#colnames(design) <- gsub("^Cond2", "", colnames(design))
+colnames(design) <- c(
+  "Intercept",
+  "SpeciesH",
+  "TreatmentIFNy",
+  "SpeciesH_TreatmentIFNy"
+)
 
 cor_fit <- duplicateCorrelation(object = dge$counts,
                                 design = design,
-                                block = metadata$Individual
+                                block = metadata2$Individual
                                 )
 
 voom_trend <- voom(dge,
                    design,
-                   block = metadata$Individual, 
+                   block = metadata2$Individual, 
                    correlation = cor_fit$consensus.correlation,
-                   plot = TRUE)
+                   plot = FALSE)
 ```
 
 ```{r Chunk of code observing number of DEGs across treatment}
-fit <- lmFit(voom_trend, design, block = metadata$Individual,
-             correlation = cor_fit$consensus.correlation)
-
-#colnames(fit$coefficients)
-contrast_matrix <- makeContrasts(
-  V.Treatment_H = H_IFNy - H_VEH,
-  V.Treatment_C = C_IFNy - C_VEH,
-  V.Species_IFNy = H_IFNy - C_IFNy,
-  V.Species_VEH = H_VEH - C_VEH,
-  levels = design
+# Fit linear model
+fit <- lmFit(
+  voom_trend,
+  design,
+  block = metadata2$Individual,
+  correlation = cor_fit$consensus.correlation
 )
-
+# Defining contrasts
+contrast_matrix <- makeContrasts(
+  Human_vs_Chimp_VEH = SpeciesH,
+  Human_vs_Chimp_IFNy = SpeciesH + SpeciesH_TreatmentIFNy,
+  Human_IFNy_vs_VEH = TreatmentIFNy + SpeciesH_TreatmentIFNy,
+  Chimp_IFNy_vs_VEH = TreatmentIFNy,
+  Interaction = SpeciesH_TreatmentIFNy,
+  levels = design)
+# Applying contrasts across samples
 fit2 <- contrasts.fit(fit, contrast_matrix)
 efit2 <- eBayes(fit2)
 signif_gene_results = decideTests(efit2, adjust.method = "BH", p.value = 0.05)
 
-summary(signif_gene_results)
-plotSA(efit2, main = "Mean-variance final model trend")
+#summary(signif_gene_results)
+#plotSA(efit2, main = "Mean-variance final model trend")
 
 ```
+## Top Tables
 
+```{r Creating TopTables for Plots}
 
+V.Human_vs_Chimp_VEH <- topTable(efit2, coef = "Human_vs_Chimp_VEH", adjust.method = "BH", p.value = 1, number = Inf)
+V.Human_vs_Chimp_IFNy <- topTable(efit2, coef = "Human_vs_Chimp_IFNy", adjust.method = "BH", p.value = 1, number = Inf)
+V.Human_IFNy_vs_VEH <- topTable(efit2, coef = "Human_IFNy_vs_VEH", adjust.method = "BH", p.value = 1, number = Inf)
+V.Chimp_IFNy_vs_VEH <- topTable(efit2, coef = "Chimp_IFNy_vs_VEH", adjust.method = "BH", p.value = 1, number = Inf)
+V.Interaction <- topTable(efit2, coef = "Interaction", adjust.method = "BH", p.value = 1, number = Inf)
+
+save_toptable_list <- list("HvC_VEH"=V.Human_vs_Chimp_VEH, "HvC_INFy"=V.Human_vs_Chimp_IFNy, "IFNyvVEH_H"=V.Human_IFNy_vs_VEH, "IFNyvVEH_C"=V.Chimp_IFNy_vs_VEH, "Interaction"=V.Interaction)
+
+saveRDS(save_toptable_list,"data/toptable_results.RDS")
+```
+
+```{r Interaction Venn Diagrams}
+
+all_genes <- save_toptable_list %>%
+  purrr::imap(~ .x %>%
+                tibble::rownames_to_column("Ensembl") %>%
+                mutate(source = .y)) %>%
+  bind_rows()
+
+sig_results <- all_genes %>%
+  filter(adj.P.Val < 0.05)
+
+sig_venn_list <- split(
+  sig_results$Ensembl,
+  sig_results$source
+)
+ 
+sig_venn_treatments <- sig_venn_list[c("IFNyvVEH_H", "IFNyvVEH_C")]
+sig_venn_species <- sig_venn_list[c("HvC_VEH", "HvC_INFy")]
+
+ggVennDiagram::ggVennDiagram(
+  sig_venn_treatments,
+  label_alpha = 0,
+) +
+  scale_fill_gradient(
+    low = "white",
+    high = "maroon",
+    limits = c(1000, 2500)
+  ) +
+  theme_void()+
+  xlim(-5, 5)+
+  coord_flip()
+
+ggVennDiagram::ggVennDiagram(
+  sig_venn_species,
+  label_alpha = 0,
+) +
+  scale_fill_gradient(
+    low = "white",
+    high = "maroon",
+    limits = c(0, 6000)
+  ) +
+  theme_void() +
+  xlim(-5, 5)+
+  coord_flip()
+
+```
+## Volcano Plots
 ```{r Volcano Plots comparing treatment conditions within the same species using limma, fig.height=4, fig.width=6}
-
-Human_IFNy_vs_VEH <- topTable(efit2, coef = "V.Treatment_H", adjust.method = "BH", p.value = 1, number = Inf)
-Chimp_IFNy_vs_VEH <- topTable(efit2, coef = "V.Treatment_C", adjust.method = "BH", p.value = 1, number = Inf)
-IFNy_Human_vs_Chimp <- topTable(efit2, coef = "V.Species_IFNy", adjust.method = "BH", p.value = 1, number = Inf)
-VEH_Human_vs_Chimp <- topTable(efit2, coef = "V.Species_VEH", adjust.method = "BH", p.value = 1, number = Inf)
-
-toptable_list <- list(Human_IFNy_vs_VEH, Chimp_IFNy_vs_VEH, IFNy_Human_vs_Chimp, VEH_Human_vs_Chimp)
-comparison_name_list <- list("Human: IFNy vs VEH", "Chimp: IFNy vs VEH", "IFNy: Human vs Chimp", "VEH: Human vs Chimp")
+toptable_list <- readRDS("data/toptable_results.RDS")
+#toptable_list <- list(V.Human_IFNy_vs_VEH, V.Chimp_IFNy_vs_VEH, V.IFNy_Human_vs_Chimp, V.VEH_Human_vs_Chimp)
+comparison_name_list <- list("VEH: Human vs Chimp", "IFNy: Human vs Chimp", "Human: IFNy vs VEH", "Chimp: IFNy vs VEH", "Interaction")
 
 generate_volcano_plot <- function(toptable, comparison_name) {
 
   volcano_colors <- toptable %>%
     rownames_to_column("Genes") %>%
     left_join(counts %>% 
-                select (Ensemble, Symbol),
+                select(Ensemble, Symbol),
               by = c("Genes" = "Ensemble")) %>% 
     mutate(
     id_label = ifelse(
@@ -152,12 +247,12 @@ generate_volcano_plot <- function(toptable, comparison_name) {
       )
     )
 
-  top_10_genes <- volcano_colors %>%
+  top_genes <- volcano_colors %>%
   arrange(adj.P.Val) %>%
   slice_head(n = 10)
   
-  # gene_of_interest <- volcano_colors %>% 
-  #   dplyr::filter(id_label == "MCP1")
+  # genes_of_interest <- volcano_colors %>%
+  #   dplyr::filter(id_label %in% c("ASPHD2", "C1R", "PARP12", "GBP2", "TNFSF13B", "TUBB", "GRAMD2A", "FAM107A", "ZCWPW2", "TRIB1", "C1S", "CD47", "SFT2D2", "CIBAR1", "IFITM2", "TESK2", "STAMBPL", "NUP58", "BPGM", "CIMAP3", "CD9", "CFH", "SLC35A4", "ENSG00000284048", "UST", "A2M", "CACHD1", "VPS13C", "FBXO31", "NORAD"))
 
   p <- ggplot(
     volcano_colors,
@@ -169,10 +264,10 @@ generate_volcano_plot <- function(toptable, comparison_name) {
       alpha = 0.6
     ) +
     
-   coord_cartesian(
-      xlim = c(-12, 12),
-      ylim = c(0, 18)
-    ) +
+   # coord_cartesian(
+   #    xlim = c(-12, 12),
+   #    ylim = c(0, 20)
+   #  ) +
     
     # geom_vline(
     # xintercept = c(-1,1),
@@ -184,8 +279,8 @@ generate_volcano_plot <- function(toptable, comparison_name) {
     # ) +
     
     geom_text_repel(
-      data = top_10_genes,
-      #data = gene_of_interest,
+      data = top_genes,
+      #data = genes_of_interest,
       aes(label = id_label),
       size = 3,
       max.overlaps = Inf,
@@ -213,55 +308,1011 @@ generate_volcano_plot <- function(toptable, comparison_name) {
   
     list(
       plot = p,
-      top10 = top_10_genes
-      # ,
-      # interesting_gene = gene_of_interest
+      top = top_genes
+      #interesting_genes = genes_of_interest
       )
 }
 
 for (i in seq_along(toptable_list)) {
   #Generate and display the results
+  
   results <- generate_volcano_plot(
     toptable_list[[i]],
     comparison_name_list[[i]]
   )
-print(results$top10)
+print(results$top)
 #print(results$interesting_gene)
 print(results$plot) # Print the plot to view
 }
 #interesting genes: GRAMD2B, ARG2, maybe PITPNM2, CD274 (encodes PD-L1), GBP4
 ```
+## Boxplots
 
-```{r}
-FC_matrix <- subset(efit2$coefficients)
+```{r Preparing log2 cpm counts and binding counts to show Human and Chimp designations}
+log2_filtered_counts <-
+  filtered_counts2 %>% 
+  cpm(., log=TRUE)%>%
+  as.data.frame() 
 
-colnames(FC_matrix) <-
-  c("V.Treatment_H",
-    "V.Treatment_C",
-    "V.Species_IFNy",
-    "V.Species_VEH"
-     )
+row.names(log2_filtered_counts) <- row.names(filtered_counts2)
 
-matrix_columns <-
-  data.frame(
-    species = c(rep("Human", 2), rep("Chimp", 2)),
-    treatment = (c(
-      "IFNy", "VEH", "IFNy", "VEH" 
-    )))
-rownames(matrix_columns) <- colnames(FC_matrix)
+human_deg <- V.Human_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  mutate(species = "Human")
+chimp_deg <- V.Chimp_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  mutate(species = "Chimp")
 
-matrix_colors <-
+deg_species <- bind_rows(human_deg, chimp_deg)
+```
+
+```{r Boxplots showing top most significant DEGs filtering to consider p less than 0.05 between Species and Treatments, fig.width=5, fig.height=5}
+top_genes <- deg_species %>%
+  group_by(species) %>%
+  #Including the above line will give top 'n' genes for each species. Note that even with stating 'n = number', not all genes may be plotted due to duplicates. Exclude to only show top 'n' across both species
+  
+  # arrange(adj.P.Val) %>% 
+  # slice_head(n=8) %>% 
+  dplyr::filter(adj.P.Val < 0.05) %>% 
+  slice_min(adj.P.Val, n = 6) %>% 
+  #The above line can be replaced with 'arrange(adj.P.Val) %>% slice_head(n-8) %>%'. Remember, slice_head:slice_min::slice_tail::slice_max
+  pull(Ensembl)
+#head(top_genes)
+
+
+log2_filtered_df <- log2_filtered_counts %>% 
+  tibble::rownames_to_column("Ensemble") %>%
+  left_join(counts %>% select(Ensemble, Symbol),
+            by = "Ensemble") %>%
+    mutate(id_label = ifelse(
+      is.na(Symbol),
+      Ensemble,
+      Symbol)
+      ) %>%
+  dplyr::filter(Ensemble %in% top_genes) %>%
+  #log2_filtered_df
+  pivot_longer(cols = starts_with("C_") | starts_with("H_"), names_to = "sample", values_to = "log2_counts") %>% 
+      # We can use this code as an alternative -> pivot_longer(cols = !c(Ensemble, Symbol, id_label), names_to = "sample", values_to = "log2_counts") %>%
+      # This is another alternative -> pivot_longer(cols = matches("^[CH]_"), names_to = "sample", values_to = "log2_counts")
+  separate("sample", into = c("species","trt","ind")) %>%
+      #mutate(spec_trt_group = paste(spec, trt, sep = "_")) %>% 
+  mutate(species=factor(species, levels = c("C","H"), labels = c("Chimp", "Human"))) %>% 
+  mutate(trt=factor(trt, levels= c("VEH","IFNy")))
+
+ggplot(log2_filtered_df,
+       aes(x = trt, y = log2_counts, fill = trt)) +
+  geom_boxplot(aes(fill = trt)) +
+  geom_point(aes(color = ind)) +
+  facet_grid(species ~ id_label) +
+  scale_fill_manual(
+    name = "Treatment",
+    values = c("VEH" = "#41B333", "IFNy" = "#8B006D")
+  ) +
+  labs(
+    title = "Top Significant DEGs in Humans and Chimps (may exclude overlapping genes)",
+    color = "Individual",
+    x = "Treatment",
+    y = "log2 CPM"
+  ) +
+  theme_bw()
+```
+
+```{r Boxplots showing bottom most significant DEGs filtering to consider p less than 0.05 between Species and Treatments, fig.width=5, fig.height=5}
+bottom_genes <- deg_species %>%
+  group_by(species) %>%
+  #Including the above line will give top 'n' genes for each species. Note that even with stating 'n = number', not all genes may be plotted due to duplicates. Exclude to only show top 'n' across both species
+  
+  # arrange(adj.P.Val) %>% 
+  # slice_head(n=8) %>% 
+  dplyr::filter(adj.P.Val < 0.05) %>% 
+  slice_max(adj.P.Val, n = 6) %>% 
+  #bottom_genes
+  #The above line can be replaced with 'arrange(adj.P.Val) %>% slice_head(n-8) %>%'. Remember, slice_head:slice_min::slice_tail::slice_max
+  pull(Ensembl)
+#head(bottom_genes)
+
+log2_filtered_df <- log2_filtered_counts %>% 
+  tibble::rownames_to_column("Ensemble") %>%
+  left_join(counts %>% select(Ensemble, Symbol),
+            by = "Ensemble") %>%
+    mutate(id_label = ifelse(
+      is.na(Symbol),
+      Ensemble,
+      Symbol)
+      ) %>%
+  dplyr::filter(Ensemble %in% bottom_genes) %>%
+  #log2_filtered_df
+  pivot_longer(cols = starts_with("C_") | starts_with("H_"), names_to = "sample", values_to = "log2_counts") %>% 
+      # We can use this code as an alternative -> pivot_longer(cols = !c(Ensemble, Symbol, id_label), names_to = "sample", values_to = "log2_counts") %>%
+      # This is another alternative -> pivot_longer(cols = matches("^[CH]_"), names_to = "sample", values_to = "log2_counts")
+  separate("sample", into = c("species","trt","ind")) %>%
+      #mutate(spec_trt_group = paste(spec, trt, sep = "_")) %>% 
+  mutate(species=factor(species, levels = c("C","H"), labels = c("Chimp", "Human"))) %>% 
+  mutate(trt=factor(trt, levels= c("VEH","IFNy")))
+
+ggplot(log2_filtered_df,
+       aes(x = trt, y = log2_counts, fill = trt)) +
+  geom_boxplot(aes(fill = trt)) +
+  geom_point(aes(color = ind)) +
+  facet_grid(species ~ id_label) +
+  scale_fill_manual(
+    name = "Treatment",
+    values = c("VEH" = "#41B333", "IFNy" = "#8B006D")
+  ) +
+  labs(
+    title = "Bottom significant DEGs in Humans and Chimps (may exclude overlapping genes)",
+    color = "Individual",
+    x = "Treatment",
+    y = "log2 CPM"
+  ) +
+  theme_bw()
+
+```
+
+
+```{r This code is looking at Species:Treatment log2cpm changes in the most significantly altered gene expressions, eval=FALSE, fig.height=5, fig.width=5, include=FALSE}
+
+log2_filtered_df <- log2_filtered_counts %>% 
+  tibble::rownames_to_column("Ensemble") %>%
+  left_join(counts %>% select(Ensemble, Symbol),
+            by = "Ensemble") %>%
+    mutate(id_label = ifelse(
+      is.na(Symbol),
+      Ensemble,
+      Symbol)
+      ) %>%
+  dplyr::filter(id_label %in% c("NORAD", "ENSG000000284048", "UST", "FBXO31", "CACHD1", "A2M", "VPS13C", "C1R", "ASPHD2", "TESK2", "TUBB", "GBP2", "CFH")) %>%
+  mutate(id_label=factor(id_label, levels = c("NORAD", "ENSG000000284048", "UST", "FBXO31", "CACHD1", "A2M", "VPS13C", "C1R", "ASPHD2", "TESK2", "TUBB", "GBP2", "CFH"))) %>% 
+  #log2_filtered_df
+  pivot_longer(cols = starts_with("C_") | starts_with("H_"), names_to = "sample", values_to = "log2_counts") %>% 
+      # We can use this code as an alternative -> pivot_longer(cols = !c(Ensemble, Symbol, id_label), names_to = "sample", values_to = "log2_counts") %>%
+      # This is another alternative -> pivot_longer(cols = matches("^[CH]_"), names_to = "sample", values_to = "log2_counts")
+  separate("sample", into = c("species","trt","ind")) %>%
+      #mutate(spec_trt_group = paste(spec, trt, sep = "_")) %>% 
+  mutate(species=factor(species, levels = c("C","H"), labels = c("Chimp", "Human"))) %>% 
+  mutate(trt=factor(trt, levels= c("VEH","IFNy"))) 
+
+# Code for a faceted wrap
+# ggplot(log2_filtered_df,
+#        aes(x = trt, y = log2_counts, fill = trt)) +
+#   geom_boxplot(aes(fill = trt)) +
+#   geom_point(aes(color = ind)) +
+#   facet_grid(id_label ~ species) +
+#   scale_fill_manual(
+#     name = "Treatment",
+#     values = c("VEH" = "#41B333", "IFNy" = "#8B006D")
+#   ) +
+#   labs(
+#     title = "Interaction DEGs in Humans and Chimps",
+#     color = "Individual",
+#     x = "Treatment",
+#     y = "log2 CPM"
+#   ) +
+#   theme_bw()
+
+# ggplot(
+#   log2_filtered_df,
+#   aes(
+#     x = species,
+#     y = log2_counts,
+#     fill = trt
+#   )
+# ) +
+#   geom_boxplot(
+#     position = position_dodge(width = 0.8)
+#   ) +
+#   geom_point(
+#   aes(
+#     color = ind,
+#     group = trt
+#   ),
+#   position = position_dodge(width = 0.8),
+#   size = 2
+# ) +
+#   facet_wrap(~ id_label, scales = "free_y") +
+#   scale_fill_manual(
+#     values = c(
+#       "VEH" = "#41B333",
+#       "IFNy" = "#8B006D"
+#     )
+#   ) +
+#   theme_bw()
+
+gene_list <- unique(log2_filtered_df$id_label)
+
+for (gene in gene_list) {
+
+  gene_df <- log2_filtered_df %>%
+    filter(id_label == gene)
+
+  p <- ggplot(
+    gene_df,
+    aes(
+      x = species,
+      y = log2_counts,
+      fill = trt
+    )
+  ) +
+    geom_boxplot(
+      aes(group = interaction(species, trt)),
+      position = position_dodge(width = 0.8)
+    ) +
+    geom_point(
+      aes(
+        color = ind,
+        group = trt
+      ),
+      position = position_dodge(width = 0.8),
+      size = 2
+    ) +
+    scale_fill_manual(
+      values = c(
+        "VEH" = "#41B333",
+        "IFNy" = "#8B006D"
+      )
+    ) +
+    labs(
+      title = gene,
+      x = NULL,
+      y = "log2 CPM"
+    ) +
+    theme_bw()
+
+  print(p)
+}
+```
+
+## Human IFNyvVEH vs Chimp IFNyvVEH Gene Expression Correlation
+
+```{r Scatter plot, fig.width=6, fig.height=4}
+
+# colnames(V.Human_IFNy_vs_VEH)
+# colnames(counts)
+# head(counts)
+human_fc <- V.Human_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  dplyr::select(Ensembl, logFC) %>%
+  rename(Human_logFC = logFC)
+
+chimp_fc <- V.Chimp_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  dplyr::select(Ensembl, logFC) %>%
+  rename(Chimp_logFC = logFC)
+
+fc_df <- inner_join(human_fc, chimp_fc, by = "Ensembl") %>%
+  left_join(
+    counts %>% 
+      dplyr::select(Ensemble, Symbol),
+    by = c("Ensembl" = "Ensemble")
+  )
+
+interaction_sig_genes <- V.Interaction %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  filter(adj.P.Val < 0.05) %>% 
+  pull(Ensembl)
+
+# fc_df_plot <- fc_df %>%
+#   mutate(
+#     interaction_sig = ifelse(
+#       Ensembl %in% interaction_sig_genes,
+#       "Significant Interaction",
+#       "Other"
+#     )
+#   )
+
+# label_df <- fc_df_with_interaction %>%
+#   filter(Symbol %in% c("ASPHD2", "VPS13C", "A2M", "C1R", "GBP2", "FBXO31", "NORAD"))
+# 
+# OR
+# 
+# label_df <- V.Interaction %>%
+#   tibble::rownames_to_column("Ensembl") %>%
+#   filter(adj.P.Val < 0.05) %>%
+#   arrange(adj.P.Val) %>%
+#   slice_head(n = 20) %>%
+#   inner_join(fc_df, by = "Ensembl")
+
+# ggplot(
+#   fc_df_plot,
+#   aes(
+#     x = Human_logFC,
+#     y = Chimp_logFC,
+#     color = interaction_sig
+#   )
+# ) +
+#   geom_point(alpha = 0.6) +
+# 
+#   scale_color_manual(
+#     values = c(
+#       "Other" = "grey70",
+#       "Significant Interaction" = "pink"
+#     )
+#   ) +
+
+
+top_interaction_genes <- V.Interaction %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  filter(adj.P.Val < 0.05) %>%
+  slice_head(n = 20) %>% 
+  pull(Ensembl)
+
+ggplot(fc_df, aes(Human_logFC, Chimp_logFC)) +
+
+  geom_point(
+    color = "grey70",
+    alpha = 0.3,
+    size = 0.75
+  ) +
+
+  geom_point(
+    data = fc_df %>%
+      filter(Ensembl %in% interaction_sig_genes),
+    color = "pink",
+    size = 0.75
+  ) +
+  
+  # geom_text_repel(
+  #     data = fc_df %>% 
+  #       filter(Ensembl %in% top_interaction_genes),
+  #     aes(label = Symbol),
+  #     size = 3,
+  #     max.overlaps = Inf,
+  #     box.padding = 0.5
+  #   ) +
+
+# geom_text_repel(
+#   data = subset(label_df, Symbol != c("A2M", "FBXO31")),
+#   aes(label = Symbol),
+#   color = "black",
+#   size = 4,
+#   box.padding = 1.5,
+#   point.padding = 0.1,
+#   force = 5,
+#   segment.color = "black",
+#   segment.size = 0.4,
+#   max.overlaps = Inf
+#   ) +
+
+  coord_cartesian(
+  xlim = c(-12, 12),
+  ylim = c(-12, 12)
+  ) +
+  scale_x_continuous(
+  breaks = seq(-12, 12, by = 6)
+  ) +
+scale_y_continuous(
+  breaks = seq(-12, 12, by = 6)
+  ) +
+    geom_vline(
+    xintercept = 0,
+    linetype = "dashed"
+    ) +
+    geom_hline(
+    yintercept = 0,
+    linetype = "dashed"
+    ) +
+  
+  stat_cor(method = "pearson",
+  label.x = -11,
+  label.y = 11
+  ) +
+  
+  theme_classic() +
+  labs(
+    x = "Human IFNy vs VEH logFC",
+    y = "Chimp IFNy vs VEH logFC",
+    title = "Cross-species IFNy response correlation"
+  )
+
+# levels(metadata2$Treatment)
+# levels(metadata2$Species)
+# levels(metadata$Treatment)
+# colnames(design)
+# 
+# colnames(contrast_matrix)
+# 
+# head(V.Human_IFNy_vs_VEH$logFC)
+# head(V.Human_VEH_vs_IFNy$logFC)
+
+```
+## GO/KEGG
+
+```{r gProfiler2 BP Human analyses, fig.width=10, fig.height=8}
+
+human_bg <- V.Human_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  pull(Ensembl)
+
+human_sig <- human_deg %>%
+  filter(adj.P.Val < 0.05) %>%
+  pull(Ensembl)
+
+gost_human <- gost(
+  query = human_sig,
+  organism = "hsapiens",
+  custom_bg = human_bg,
+  sources = "GO:BP"
+)
+
+human_GO <- gost_human$result
+
+#human_GO
+
+# gostplot(gost_human)
+
+human_GO %>%
+  slice_min(p_value, n = 20) %>%
+  mutate(
+    term_name = factor(term_name,
+                       levels = term_name)
+  ) %>%
+  ggplot(aes(x = -log10(p_value),
+             y = rev(term_name),
+             size = intersection_size,
+             color = p_value)) +
+  geom_point() +
+  theme_classic() +
+  labs(
+    x = "-log10(adjusted p-value)",
+    y = NULL
+  )
+#length(unique(human_GO$term_id))
+```
+
+
+```{r enrichGO BP Human analyses, fig.width=10, fig.height=8}
+human_sig_entrez <- bitr(human_sig,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID", 
+    OrgDb = org.Hs.eg.db)
+
+human_bg_entrez <- bitr(human_bg,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db) 
+
+ego_human <- enrichGO(
+  gene = human_sig_entrez$ENTREZID,
+  universe = human_bg_entrez$ENTREZID,
+  OrgDb = org.Hs.eg.db,
+  keyType = "ENTREZID", 
+  ont = "BP", 
+  pAdjustMethod = "BH", 
+  readable = TRUE )
+
+#summary(ego_human)
+
+# # Default dot plot from enrichGO
+# dotplot(
+#   ego_human,
+#   showCategory = 20,
+#   font.size = 10)
+
+# # ggplot barplot code for enrichGO
+# ego_human@result %>%
+#   arrange(p.adjust) %>%
+#   slice_head(n = 20) %>%
+#   mutate(
+#     Description = factor(
+#       Description,
+#       levels = rev(Description)
+#     )
+#   ) %>%
+#   ggplot(aes(
+#     x = -log10(p.adjust),
+#     y = Description
+#   )) +
+#   geom_col(fill = "steelblue") +
+#   theme_classic() +
+#   labs(
+#     x = expression(-log[10]("Adjusted p-value")),
+#     y = NULL,
+#     title = "Human GO Biological Processes"
+#   )
+
+ego_human@result %>%
+  arrange(p.adjust) %>%
+  slice_head(n = 20) %>%
+  mutate(
+    Description = factor(
+      Description,
+      levels = rev(Description)
+    )
+  ) %>%
+  ggplot(aes(
+    x = -log10(p.adjust),
+    y = Description,
+    size = Count,
+    color = p.adjust
+  )) +
+  geom_point() +
+  scale_color_gradient(low = "red", high = "blue") +
+  theme_classic() +
+  labs(
+    x = expression(-log[10]("adjusted p-value")),
+    y = NULL
+  )
+
+```
+
+
+```{r Venn Diagram reporting number of unique and shared GO_terms identified from enrichGO and gProfiler2}
+
+enrichGO_terms <- ego_human@result %>%
+  filter(p.adjust < 0.05) %>%
+  pull(ID)
+
+gprofiler2_terms <- gost_human$result %>%
+  filter(p_value < 0.05) %>%
+  pull(term_id)
+
+ggVennDiagram(
   list(
-    species = c("pink", "chocolate4"),
-    treatment = c("yellow1", "lightgreen"))
+    clusterProfiler = enrichGO_terms,
+    gProfiler2 = gprofiler2_terms
+  )
+) +
+scale_fill_gradient(low = "light blue", high = "dark blue") +
+theme_void() +
+theme(
+#  legend.position = "none" #This is to exclude the color legend
+) +
+  xlim(-5, 5) +
+  coord_flip()
 
-names(matrix_colors$species) <- unique(matrix_columns$species)
-names(matrix_colors$treatment) <- unique(matrix_columns$treatment)
+```
 
-corr_FC <- cor(FC_matrix)
 
-heatmap_anno <-  HeatmapAnnotation(df = matrix_columns, col = matrix_colors)
-Heatmap(corr_FC, top_annotation = heatmap_anno)
+### BP paths
 
+```{r Function for clusterProfiler BP Human analyses, fig.width=5, fig.height=5}
+
+generate_GO_plots <- function(toptable, comparison_name){
+
+  bg <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    pull(Ensembl)
+
+  sig <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    filter(adj.P.Val < 0.05) %>%
+    pull(Ensembl)
+
+  if(length(sig) == 0){
+    message("No significant genes for ", comparison_name)
+    return(NULL)
+  }
+
+  sig_entrez <- bitr(
+    sig,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  bg_entrez <- bitr(
+    bg,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  ego <- enrichGO(
+    gene = sig_entrez$ENTREZID,
+    universe = bg_entrez$ENTREZID,
+    OrgDb = org.Hs.eg.db,
+    keyType = "ENTREZID",
+    ont = "BP",
+    pAdjustMethod = "BH",
+    readable = TRUE
+  )
+
+  if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
+  message("No enriched GO terms for ", comparison_name)
+  return(NULL)
+}
+  
+  p <- barplot(
+    ego,
+    showCategory = 20,
+    font.size = 10,
+    title = paste0("GO_BP ", comparison_name)
+  )
+
+  return(p)
+}
+
+for(i in seq_along(save_toptable_list)){
+
+  p <- generate_GO_plots(
+    save_toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+
+  if(!is.null(p))
+    print(p)
+}
+
+# human_bg <- V.Human_IFNy_vs_VEH %>%
+#   tibble::rownames_to_column("Ensembl") %>%
+#   pull(Ensembl)
+# 
+# human_sig <- human_deg %>%
+#   filter(adj.P.Val < 0.05) %>%
+#   pull(Ensembl)
+# 
+# human_sig_entrez <- bitr(human_sig,
+#                         fromType = "ENSEMBL",
+#                         toType = "ENTREZID",
+#                         OrgDb = org.Hs.eg.db)
+# 
+# human_bg_entrez <- bitr(human_bg,
+#                        fromType = "ENSEMBL",
+#                        toType = "ENTREZID",
+#                        OrgDb = org.Hs.eg.db)
+# ego_human <- enrichGO(
+#   gene = human_sig_entrez$ENTREZID,
+#   universe = human_bg_entrez$ENTREZID,
+#   OrgDb = org.Hs.eg.db,
+#   keyType = "ENTREZID",
+#   ont = "BP",
+#   pAdjustMethod = "BH",
+#   readable = TRUE
+# )
+# dotplot(ego_human)
+
+```
+### MF paths
+
+```{r GO MF analyses, fig.width=5, fig.height=5}
+
+generate_GO_plots <- function(toptable, comparison_name){
+
+  bg <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    pull(Ensembl)
+
+  sig <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    filter(adj.P.Val < 0.05) %>%
+    pull(Ensembl)
+
+  if(length(sig) == 0){
+    message("No significant genes for ", comparison_name)
+    return(NULL)
+  }
+
+  sig_entrez <- bitr(
+    sig,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  bg_entrez <- bitr(
+    bg,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  ego <- enrichGO(
+    gene = sig_entrez$ENTREZID,
+    universe = bg_entrez$ENTREZID,
+    OrgDb = org.Hs.eg.db,
+    keyType = "ENTREZID",
+    ont = "MF",
+    pAdjustMethod = "BH",
+    readable = TRUE
+  )
+
+  if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
+  message("No enriched GO terms for ", comparison_name)
+  return(NULL)
+}
+  
+  p <- barplot(
+    ego,
+    showCategory = 20,
+    font.size = 10,
+    title = paste0("GO_MF ", comparison_name)
+  )
+
+  return(p)
+}
+
+for(i in seq_along(save_toptable_list)){
+
+  p <- generate_GO_plots(
+    save_toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+
+  if(!is.null(p))
+    print(p)
+}
+
+
+```
+
+### CC paths
+
+```{r GO CC analyses, fig.width=5, fig.height=5}
+generate_GO_plots <- function(toptable, comparison_name){
+
+  bg <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    pull(Ensembl)
+
+  sig <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    filter(adj.P.Val < 0.05) %>%
+    pull(Ensembl)
+
+  if(length(sig) == 0){
+    message("No significant genes for ", comparison_name)
+    return(NULL)
+  }
+
+  sig_entrez <- bitr(
+    sig,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  bg_entrez <- bitr(
+    bg,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  ego <- enrichGO(
+    gene = sig_entrez$ENTREZID,
+    universe = bg_entrez$ENTREZID,
+    OrgDb = org.Hs.eg.db,
+    keyType = "ENTREZID",
+    ont = "CC",
+    pAdjustMethod = "BH",
+    readable = TRUE
+  )
+
+  if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
+  message("No enriched GO terms for ", comparison_name)
+  return(NULL)
+}
+  
+  p <- barplot(
+    ego,
+    showCategory = 20,
+    font.size = 10,
+    title = paste0("GO_CC ", comparison_name)
+  )
+
+  return(p)
+}
+
+for(i in seq_along(save_toptable_list)){
+
+  p <- generate_GO_plots(
+    save_toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+
+  if(!is.null(p))
+    print(p)
+}
+
+
+```
+
+## GSEA of IFNy enriched responses
+
+```{r GSEA of Human vs Chimp IFNy, fig.width=6, fig.height=10}
+
+# Human ranked gene list
+human_results <- V.Human_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensemble") %>%
+  left_join(
+    counts %>%
+      dplyr::select(Ensemble, Entrez_ID, Symbol),
+    by = "Ensemble"
+  ) %>%
+  dplyr::filter(!is.na(Entrez_ID)) %>%
+  dplyr::distinct(Entrez_ID, .keep_all = TRUE)
+
+human_rank <- human_results$logFC
+names(human_rank) <- human_results$Entrez_ID
+human_rank <- sort(human_rank, decreasing = TRUE)
+
+
+# Chimp ranked gene list
+chimp_results <- V.Chimp_IFNy_vs_VEH %>%
+  tibble::rownames_to_column("Ensemble") %>%
+  left_join(
+    counts %>%
+      dplyr::select(Ensemble, Entrez_ID, Symbol),
+    by = "Ensemble"
+  ) %>%
+  dplyr::filter(!is.na(Entrez_ID)) %>%
+  dplyr::distinct(Entrez_ID, .keep_all = TRUE)
+
+chimp_rank <- chimp_results$logFC
+names(chimp_rank) <- chimp_results$Entrez_ID
+chimp_rank <- sort(chimp_rank, decreasing = TRUE)
+
+
+# Run GSEA
+human_gsea <- gseGO(
+    geneList = human_rank,
+    OrgDb = org.Hs.eg.db,
+    ont = "BP",
+    keyType = "ENTREZID",
+    pAdjustMethod = "BH"
+)
+
+chimp_gsea <- gseGO(
+    geneList = chimp_rank,
+    OrgDb = org.Hs.eg.db,
+    ont = "BP",
+    keyType = "ENTREZID",
+    pAdjustMethod = "BH"
+)
+
+
+# Extract results
+human_gsea_results <- human_gsea@result
+chimp_gsea_results <- chimp_gsea@result
+
+# Removing duplicate comparison IDs
+human_gsea_results <- human_gsea@result %>%
+  dplyr::filter(!is.na(ID))
+
+chimp_gsea_results <- chimp_gsea@result %>%
+  dplyr::filter(!is.na(ID))
+
+# Compare pathways
+comparison <- inner_join(
+  human_gsea_results,
+  chimp_gsea_results,
+  by = "ID",
+  suffix = c("_Human", "_Chimp")
+)
+
+
+# Pathways to label
+label_df <- comparison %>%
+  filter(
+    p.adjust_Human < 0.05 |
+    p.adjust_Chimp < 0.05
+  )
+
+
+# # Scatter plot
+# ggplot(
+#   comparison,
+#   aes(
+#     x = NES_Chimp,
+#     y = NES_Human
+#   )
+# ) +
+# 
+#   geom_point(
+#     color = "steelblue",
+#     alpha = 0.7,
+#     size = 2
+#   ) +
+# 
+#   geom_abline(
+#     slope = 1,
+#     intercept = 0,
+#     linetype = "dashed",
+#     color = "red"
+#   ) +
+# 
+#   geom_text_repel(
+#     data = label_df,
+#     aes(label = Description_Human),
+#     size = 3,
+#     max.overlaps = 30,
+#     box.padding = 0.5,
+#     point.padding = 0.2
+#   ) +
+# 
+#   coord_equal() +
+# 
+#   theme_classic(base_size = 14) +
+# 
+#   labs(
+#     title = "GSEA comparison: Human vs Chimp",
+#     x = "Chimp NES",
+#     y = "Human NES"
+#   )
+
+# Heatmap for all pathways
+heatmap_matrix <- comparison %>%
+  dplyr::select(
+    ID,
+    NES_Human,
+    NES_Chimp
+  ) %>%
+  tibble::column_to_rownames("ID") %>%
+  as.matrix()
+
+heatmap_matrix[is.na(heatmap_matrix)] <- 0
+
+Heatmap(
+  heatmap_matrix,
+  name = "NES",
+  col = colorRamp2(
+    c(-3, 0, 3),
+    c("blue", "white", "red")
+  ),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE,
+  row_names_gp = gpar(fontsize = 8),
+  column_title = "GSEA Comparison",
+  column_names_gp = gpar(fontsize = 12)
+)
+
+# # Heatmap for significant pathways
+# comparison_sig <- comparison %>%
+#   filter(
+#     p.adjust_Human < 0.05 |
+#     p.adjust_Chimp < 0.05
+#   )
+# 
+# heatmap_matrix <- comparison_sig %>%
+#     select(
+#         ID,
+#         NES_Human,
+#         NES_Chimp
+#     ) %>%
+#     column_to_rownames("ID") %>%
+#     as.matrix()
+# 
+# heatmap_matrix[is.na(heatmap_matrix)] <- 0
+# 
+# Heatmap(
+#   heatmap_matrix,
+#   name = "NES",
+#   col = colorRamp2(
+#     c(-3, 0, 3),
+#     c("blue", "white", "red")
+#   ),
+#   cluster_rows = TRUE,
+#   cluster_columns = FALSE,
+#   row_names_gp = gpar(fontsize = 8),
+#   column_title = "GSEA Comparison",
+#   column_names_gp = gpar(fontsize = 12)
+# )
+
+# Heatmap for top pathways
+top_pathways <- comparison %>%
+    arrange(p.adjust_Human + p.adjust_Chimp) %>%
+    slice_tail(n = 50)
+
+heatmap_matrix <- top_pathways %>%
+    select(
+        ID,
+        NES_Human,
+        NES_Chimp
+    ) %>%
+    column_to_rownames("ID") %>%
+    as.matrix()
+
+heatmap_matrix[is.na(heatmap_matrix)] <- 0
+
+Heatmap(
+    heatmap_matrix,
+    name = "NES",
+    col = colorRamp2(
+        c(-3,0,3),
+        c("blue","white","red")
+    ),
+    cluster_rows = TRUE,
+    cluster_columns = FALSE
+)
 ```
 
