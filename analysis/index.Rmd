@@ -13,5 +13,6 @@ Welcome to my research website. This is where my R code will be
 ### IFNy RNA Sequencing Analysis Pipeline
 [RNA Sequencing Quality Check](https://hatamtam.github.io/IFNy/IFNy_RNASeq_Quality_Check.html)
 
-[Differentially Expressed Gene Analysis](https://hatamtam.github.io/IFNy/IFNy_DEG_Analysis.html)
+[Differential Expression Gene Analysis](https://hatamtam.github.io/IFNy/IFNy_DEG_Analysis.html)
 
+[Cormotif Pipeline](https://hatamtam.github.io/IFNy/IFNy_Cormotif_Analysis.html)
