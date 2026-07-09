@@ -27,7 +27,28 @@ pre[class] {
 
 ## Libraries
 ```{r}
-#nothing here yet
+library(tidyverse)
+library(dplyr)
+library(tibble)
+library(scales)
+library(edgeR)
+library(smplot2)
+library(ggpubr)
+library(workflowr)
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(gridExtra)
+library(ggrepel)
+library(ggVennDiagram)
+library(grid)
+library(ggrepel)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(clusterProfiler)
+library(circlize)
+library(gprofiler2)
+library(stringr)
+library(BiocParallel)
 ```
 
 
@@ -826,5 +847,120 @@ plotMotifnew<-function(fitted_cormotif,title="")
        labels=floor(fitted_cormotif$motif.p*Ng))
 }
 ```
+
+## Reading in Filtered Log2 CPM counts Table and Metadata
+
+```{r}
+precleaned_metadata <- readRDS("data/metadata_IFNy.RDS")
+precleaned_filtered_log2cpm_counts <- readRDS("data/Ensembl_Condition_filtered_log2cpm_counts_df.RDS")
+
+metadata <- precleaned_metadata %>%
+  filter(!Condition %in% c("C_IFNy_C2R", "C_VEH_C2R"))
+
+filtered_log2cpm_counts <- precleaned_filtered_log2cpm_counts %>%
+  dplyr::select(-c(C_IFNy_C2R, C_VEH_C2R))
+
+trt_order <- c("IFNy", "VEH") %>% 
+  unique()
+species_order <- c("H", "C")
+
+metadata_cmf <- metadata %>% 
+  dplyr::mutate(
+    Treatment = factor(Treatment, levels = trt_order),
+    Species = factor(Species, levels = species_order)
+  ) %>% 
+  dplyr::arrange(
+    Species,
+    Treatment,
+    Individual
+  )
+
+# saveRDS(metadata_cmf, "data/metadata_cormotif_reordered.RDS")
+
+metadata_cmf <- readRDS("data/metadata_cormotif_reordered.RDS")
+
+expr <-filtered_log2cpm_counts[, metadata_cmf$Condition]
+
+stopifnot(colnames(expr) == metadata_cmf$Condition)
+
+expr <- as.matrix(expr)
+
+#create my groupid to define the different experimental parameters present
+#I have Species, Treatment, and Individual. The individual has species built in.
+
+#groupid is laid out as follows:
+#H_IFNy_H1-6 = 1; H_IFNy_C1-5 = 2
+#H_VEH_H1-6 = 3; C_VEH_C1-5 = 4
+
+groupid <- metadata_cmf %>%
+  mutate(
+    Cond = factor(
+      Cond,
+      levels = c(
+        "H_IFNy",
+        "C_IFNy",
+        "H_VEH",
+        "C_VEH"
+      )
+    )
+  ) %>%
+  pull(Cond) %>%
+  as.numeric()
+
+#now make the comparisons between stimulus and vehicle within species
+
+#flatten into a vector
+compid <- data.frame(Cond1 = c(1, 2), 
+                     Cond2 = c(3, 4)
+                     )
+
+# head(groupid)
+# dim(groupid)
+
+# dim(metadata_cmf)
+# head(metadata_cmf)
+# colnames(filtered_log2cpm_counts)
+# groupid
+```
+
+## Performing Cormotif
+```{r}
+# #Make sure to run set set every time this RMarkdown page is being run for the first time
+#set.seed(301250)
+
+# cmf_fit <- cormotiffit(
+#   exprs = expr,
+#   groupid = groupid,
+#   compid = compid,
+#   K  = 1:20,
+#   max.iter = 1000,
+#   BIC = TRUE,
+#   runtype = "logCPM"
+# )
+
+# ncol(exprs)
+# length(groupid)
+# length(compid)
+
+#saveRDS(cmf_fit, "data/cormotif_fitmatrix.RDS")
+
+cmf_fit <- readRDS("data/cormotif_fitmatrix.RDS")
+
+```
+
+## Analysis of Cormotif
+```{r}
+plotIC(cmf_fit)
+
+plotMotif(cmf_fit)
+```
+
+
+
+
+
+
+
+
 
 
