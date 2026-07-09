@@ -521,15 +521,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeb8ce897bf1adebae7401f6154a13d6dc0aa74bf4targetblankb8ce897a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree2fbcfb6f6282364d84c1bbce0ae7b726a7445bcatargetblank2fbcfb6a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/hatamtam/IFNy/tree/b8ce897bf1adebae7401f6154a13d6dc0aa74bf4" target="_blank">b8ce897</a>
+<a href="https://github.com/hatamtam/IFNy/tree/2fbcfb6f6282364d84c1bbce0ae7b726a7445bca" target="_blank">2fbcfb6</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytreeb8ce897bf1adebae7401f6154a13d6dc0aa74bf4targetblankb8ce897a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomhatamtamIFNytree2fbcfb6f6282364d84c1bbce0ae7b726a7445bcatargetblank2fbcfb6a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -539,7 +539,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/hatamtam/IFNy/tree/b8ce897bf1adebae7401f6154a13d6dc0aa74bf4" target="_blank">b8ce897</a>.
+<a href="https://github.com/hatamtam/IFNy/tree/2fbcfb6f6282364d84c1bbce0ae7b726a7445bca" target="_blank">2fbcfb6</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -567,7 +567,6 @@ Untracked files:
     Untracked:  test.png
 
 Unstaged changes:
-    Modified:   analysis/IFNy_DEG_Analysis.Rmd
     Deleted:    analysis/IFNy_Metadata.Rmd
     Modified:   analysis/IFNy_RNASeq_Quality_Check.Rmd
     Modified:   analysis/Practice_code.Rmd
@@ -616,6 +615,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/hatamtam/IFNy/blob/2fbcfb6f6282364d84c1bbce0ae7b726a7445bca/analysis/IFNy_Cormotif_Analysis.Rmd" target="_blank">2fbcfb6</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-07-09
+</td>
+<td>
+wflow_publish("analysis/IFNy_Cormotif_Analysis.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/hatamtam/IFNy/6cf525b06533eb993b2b35dba15242bcde513c8c/docs/IFNy_Cormotif_Analysis.html" target="_blank">6cf525b</a>
+</td>
+<td>
+Harsha Tamtam
+</td>
+<td>
+2026-07-09
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -686,7 +719,28 @@ pre[class] {
 </style>
 <div id="libraries" class="section level2">
 <h2>Libraries</h2>
-<pre class="r"><code>#nothing here yet</code></pre>
+<pre class="r"><code>library(tidyverse)
+library(dplyr)
+library(tibble)
+library(scales)
+library(edgeR)
+library(smplot2)
+library(ggpubr)
+library(workflowr)
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(gridExtra)
+library(ggrepel)
+library(ggVennDiagram)
+library(grid)
+library(ggrepel)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(clusterProfiler)
+library(circlize)
+library(gprofiler2)
+library(stringr)
+library(BiocParallel)</code></pre>
 </div>
 <div
 id="cormotif-analysis-to-answer-the-question-of-which-genes-exhibit-the-same-differential-expression-pattern-across-multiple-comparisons"
@@ -1481,6 +1535,110 @@ plotMotifnew&lt;-function(fitted_cormotif,title=&quot;&quot;)
   text(fitted_cormotif$motif.p+0.15,1:NK,
        labels=floor(fitted_cormotif$motif.p*Ng))
 }</code></pre>
+</div>
+<div id="reading-in-filtered-log2-cpm-counts-table-and-metadata"
+class="section level2">
+<h2>Reading in Filtered Log2 CPM counts Table and Metadata</h2>
+<pre class="r"><code>precleaned_metadata &lt;- readRDS(&quot;data/metadata_IFNy.RDS&quot;)
+precleaned_filtered_log2cpm_counts &lt;- readRDS(&quot;data/Ensembl_Condition_filtered_log2cpm_counts_df.RDS&quot;)
+
+metadata &lt;- precleaned_metadata %&gt;%
+  filter(!Condition %in% c(&quot;C_IFNy_C2R&quot;, &quot;C_VEH_C2R&quot;))
+
+filtered_log2cpm_counts &lt;- precleaned_filtered_log2cpm_counts %&gt;%
+  dplyr::select(-c(C_IFNy_C2R, C_VEH_C2R))
+
+trt_order &lt;- c(&quot;IFNy&quot;, &quot;VEH&quot;) %&gt;% 
+  unique()
+species_order &lt;- c(&quot;H&quot;, &quot;C&quot;)
+
+metadata_cmf &lt;- metadata %&gt;% 
+  dplyr::mutate(
+    Treatment = factor(Treatment, levels = trt_order),
+    Species = factor(Species, levels = species_order)
+  ) %&gt;% 
+  dplyr::arrange(
+    Species,
+    Treatment,
+    Individual
+  )
+
+# saveRDS(metadata_cmf, &quot;data/metadata_cormotif_reordered.RDS&quot;)
+
+metadata_cmf &lt;- readRDS(&quot;data/metadata_cormotif_reordered.RDS&quot;)
+
+expr &lt;-filtered_log2cpm_counts[, metadata_cmf$Condition]
+
+stopifnot(colnames(expr) == metadata_cmf$Condition)
+
+expr &lt;- as.matrix(expr)
+
+#create my groupid to define the different experimental parameters present
+#I have Species, Treatment, and Individual. The individual has species built in.
+
+#groupid is laid out as follows:
+#H_IFNy_H1-6 = 1; H_IFNy_C1-5 = 2
+#H_VEH_H1-6 = 3; C_VEH_C1-5 = 4
+
+groupid &lt;- metadata_cmf %&gt;%
+  mutate(
+    Cond = factor(
+      Cond,
+      levels = c(
+        &quot;H_IFNy&quot;,
+        &quot;C_IFNy&quot;,
+        &quot;H_VEH&quot;,
+        &quot;C_VEH&quot;
+      )
+    )
+  ) %&gt;%
+  pull(Cond) %&gt;%
+  as.numeric()
+
+#now make the comparisons between stimulus and vehicle within species
+
+#flatten into a vector
+compid &lt;- data.frame(Cond1 = c(1, 2), 
+                     Cond2 = c(3, 4)
+                     )
+
+# head(groupid)
+# dim(groupid)
+
+# dim(metadata_cmf)
+# head(metadata_cmf)
+# colnames(filtered_log2cpm_counts)
+# groupid</code></pre>
+</div>
+<div id="performing-cormotif" class="section level2">
+<h2>Performing Cormotif</h2>
+<pre class="r"><code># #Make sure to run set set every time this RMarkdown page is being run for the first time
+#set.seed(301250)
+
+# cmf_fit &lt;- cormotiffit(
+#   exprs = expr,
+#   groupid = groupid,
+#   compid = compid,
+#   K  = 1:20,
+#   max.iter = 1000,
+#   BIC = TRUE,
+#   runtype = &quot;logCPM&quot;
+# )
+
+# ncol(exprs)
+# length(groupid)
+# length(compid)
+
+#saveRDS(cmf_fit, &quot;data/cormotif_fitmatrix.RDS&quot;)
+
+cmf_fit &lt;- readRDS(&quot;data/cormotif_fitmatrix.RDS&quot;)</code></pre>
+</div>
+<div id="analysis-of-cormotif" class="section level2">
+<h2>Analysis of Cormotif</h2>
+<pre class="r"><code>plotIC(cmf_fit)</code></pre>
+<p><img src="figure/IFNy_Cormotif_Analysis.Rmd/unnamed-chunk-6-1.png" alt="" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plotMotif(cmf_fit)</code></pre>
+<p><img src="figure/IFNy_Cormotif_Analysis.Rmd/unnamed-chunk-6-2.png" alt="" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1508,23 +1666,69 @@ time zone: America/Chicago
 tzcode source: internal
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] stats4    grid      stats     graphics  grDevices utils     datasets 
+[8] methods   base     
 
 other attached packages:
-[1] workflowr_1.7.2
+ [1] BiocParallel_1.46.0    gprofiler2_0.2.4       circlize_0.4.18       
+ [4] clusterProfiler_4.20.0 enrichplot_1.32.0      org.Hs.eg.db_3.23.1   
+ [7] AnnotationDbi_1.74.0   IRanges_2.46.0         S4Vectors_0.50.1      
+[10] Biobase_2.72.0         BiocGenerics_0.58.1    generics_0.1.4        
+[13] ggVennDiagram_1.5.7    ggrepel_0.9.8          gridExtra_2.3         
+[16] RColorBrewer_1.1-3     ComplexHeatmap_2.25.3  ggpubr_0.6.3          
+[19] smplot2_0.2.6          edgeR_4.10.0           limma_3.68.2          
+[22] scales_1.4.0           lubridate_1.9.5        forcats_1.0.1         
+[25] stringr_1.6.0          dplyr_1.2.1            purrr_1.2.2           
+[28] readr_2.2.0            tidyr_1.3.2            tibble_3.3.1          
+[31] ggplot2_4.0.3          tidyverse_2.0.0        workflowr_1.7.2       
 
 loaded via a namespace (and not attached):
- [1] vctrs_0.7.3       httr_1.4.8        cli_3.6.6         knitr_1.51       
- [5] rlang_1.2.0       xfun_0.57         stringi_1.8.7     otel_0.2.0       
- [9] processx_3.9.0    promises_1.5.0    jsonlite_2.0.0    glue_1.8.1       
-[13] rprojroot_2.1.1   git2r_0.36.2      htmltools_0.5.9   httpuv_1.6.17    
-[17] sass_0.4.10       rmarkdown_2.31    jquerylib_0.1.4   tibble_3.3.1     
-[21] evaluate_1.0.5    fastmap_1.2.0     yaml_2.3.12       lifecycle_1.0.5  
-[25] whisker_0.4.1     stringr_1.6.0     compiler_4.6.0    fs_2.1.0         
-[29] pkgconfig_2.0.3   Rcpp_1.1.1-1.1    rstudioapi_0.19.0 later_1.4.8      
-[33] digest_0.6.39     R6_2.6.1          pillar_1.11.1     callr_3.8.0      
-[37] magrittr_2.0.5    bslib_0.11.0      tools_4.6.0       cachem_1.1.0     
-[41] getPass_0.2-4    </code></pre>
+  [1] splines_4.6.0           later_1.4.8             ggplotify_0.1.3        
+  [4] polyclip_1.10-7         enrichit_0.1.5          rpart_4.1.27           
+  [7] httr2_1.2.3             lifecycle_1.0.5         rstatix_1.0.0          
+ [10] doParallel_1.0.17       rprojroot_2.1.1         processx_3.9.0         
+ [13] lattice_0.22-9          MASS_7.3-65             backports_1.5.1        
+ [16] magrittr_2.0.5          plotly_4.12.0           Hmisc_5.2-5            
+ [19] sass_0.4.10             rmarkdown_2.31          jquerylib_0.1.4        
+ [22] yaml_2.3.12             httpuv_1.6.17           otel_0.2.0             
+ [25] ggtangle_0.1.2          cowplot_1.2.0           DBI_1.3.0              
+ [28] abind_1.4-8             yulab.utils_0.2.4       nnet_7.3-20            
+ [31] tweenr_2.0.3            rappdirs_0.3.4          aisdk_1.4.12           
+ [34] git2r_0.36.2            gdtools_0.5.1           tidytree_0.4.8         
+ [37] codetools_0.2-20        DOSE_4.6.0              ggforce_0.5.0          
+ [40] tidyselect_1.2.1        shape_1.4.6.1           aplot_0.3.1            
+ [43] farver_2.1.2            matrixStats_1.5.0       base64enc_0.1-6        
+ [46] Seqinfo_1.2.0           jsonlite_2.0.0          GetoptLong_1.1.1       
+ [49] Formula_1.2-5           iterators_1.0.14        systemfonts_1.3.2      
+ [52] foreach_1.5.2           tools_4.6.0             ggnewscale_0.5.2       
+ [55] treeio_1.36.1           Rcpp_1.1.1-1.1          glue_1.8.1             
+ [58] xfun_0.57               qvalue_2.44.0           withr_3.0.3            
+ [61] fastmap_1.2.0           callr_3.8.0             digest_0.6.39          
+ [64] timechange_0.4.0        R6_2.6.1                gridGraphics_0.5-1     
+ [67] colorspace_2.1-2        GO.db_3.23.1            RSQLite_3.52.0         
+ [70] fontLiberation_0.1.0    data.table_1.18.4       httr_1.4.8             
+ [73] htmlwidgets_1.6.4       scatterpie_0.2.6        whisker_0.4.1          
+ [76] pkgconfig_2.0.3         gtable_0.3.6            blob_1.3.0             
+ [79] S7_0.2.2                XVector_0.52.0          htmltools_0.5.9        
+ [82] fontBitstreamVera_0.1.1 carData_3.0-6           pwr_1.3-0              
+ [85] clue_0.3-68             png_0.1-9               ggfun_0.2.1            
+ [88] knitr_1.51              rstudioapi_0.19.0       tzdb_0.5.0             
+ [91] reshape2_1.4.5          rjson_0.2.23            checkmate_2.3.4        
+ [94] nlme_3.1-169            cachem_1.1.0            zoo_1.8-15             
+ [97] GlobalOptions_0.1.4     parallel_4.6.0          foreign_0.8-91         
+[100] pillar_1.11.1           vctrs_0.7.3             promises_1.5.0         
+[103] tidydr_0.0.6            car_3.1-5               cluster_2.1.8.2        
+[106] htmlTable_2.5.0         evaluate_1.0.5          cli_3.6.6              
+[109] locfit_1.5-9.12         compiler_4.6.0          rlang_1.2.0            
+[112] crayon_1.5.3            ggsignif_0.6.4          getPass_0.2-4          
+[115] plyr_1.8.9              fs_2.1.0                ggiraph_0.9.6          
+[118] stringi_1.8.7           viridisLite_0.4.3       Biostrings_2.80.0      
+[121] lazyeval_0.2.3          Matrix_1.7-5            GOSemSim_2.38.0        
+[124] fontquiver_0.2.1        hms_1.1.4               patchwork_1.3.2        
+[127] bit64_4.8.0             KEGGREST_1.52.2         statmod_1.5.2          
+[130] igraph_2.3.3            broom_1.0.13            memoise_2.0.1          
+[133] bslib_0.11.0            ggtree_4.2.0            bit_4.6.0              
+[136] gson_0.2.0              ape_5.8-1              </code></pre>
 </div>
 </div>
 </div>
