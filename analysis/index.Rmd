@@ -8,7 +8,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website. This is where my R code will be
+Welcome to my research website! This is where my R code will be
 
 ### IFNy RNA Sequencing Analysis Pipeline
 [RNA Sequencing Quality Check](https://hatamtam.github.io/IFNy/IFNy_RNASeq_Quality_Check.html)
@@ -16,3 +16,9 @@ Welcome to my research website. This is where my R code will be
 [Differential Expression Gene Analysis](https://hatamtam.github.io/IFNy/IFNy_DEG_Analysis.html)
 
 [Cormotif Pipeline](https://hatamtam.github.io/IFNy/IFNy_Cormotif_Analysis.html)
+
+[Gene Ontology](https://hatamtam.github.io/IFNy/IFNy_Ontology_Analysis.html)
+
+[Gene Set Enrichment Analysis](https://hatamtam.github.io/IFNy/IFNy_GSEA_Analysis.html)
+
+[Genome-wide Association Studies Hits Exploration](https://hatamtam.github.io/IFNy/IFNy_GWAS_hits_Analysis.html)
