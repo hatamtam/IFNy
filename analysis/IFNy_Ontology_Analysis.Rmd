@@ -1,0 +1,955 @@
+---
+title: "IFNy_Ontology_Analysis"
+author: "Harsha Tamtam"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r setup, include=FALSE}
+#this chuck is to setup defaults for basic settings of the webpage, note that this chunk is R language and the chunk below is CSS language
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	dev = c("png","pdf")
+)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+}
+```
+
+## Library Section
+```{r Libraries}
+library(tidyverse)
+library(dplyr)
+library(tibble)
+library(scales)
+library(cowplot)
+library(edgeR)
+library(smplot2)
+library(ggpubr)
+library(workflowr)
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(gridExtra)
+library(ggrepel)
+library(ggVennDiagram)
+library(grid)
+library(ggrepel)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(clusterProfiler)
+library(circlize)
+library(gprofiler2)
+library(stringr)
+library(readr)
+library(GO.db)
+library(AnnotationDbi)
+```
+
+## File Calling and Filtering
+```{r}
+metadata <- readRDS("data/IFNy_data/IFNy_RNASeq/IFNy_metadata.RDS")
+counts <- readRDS("data/IFNy_data/IFNy_RNASeq/Ensembl_Condition_filtered_log2cpm_counts_df.RDS")
+
+cleaned_metadata <- metadata %>%
+  dplyr::filter(!Condition %in% c("C_IFNy_C2R", "C_VEH_C2R", "H_IFNy_H4R", "H_VEH_H4R"))
+
+cleaned_counts <- counts %>%
+  dplyr::select(-c(C_IFNy_C2R, C_VEH_C2R))
+
+# dim(filtered_raw_counts)
+# str(filtered_raw_c
+
+```
+
+## GO/KEGG
+
+### gProfiler2 GO:BP Attempt
+```{r gProfiler2 BP Human analyses, fig.height=8, fig.width=10}
+
+toptable_results <- readRDS("data/IFNy_data/IFNy_RNASeq/toptable_results.RDS")
+
+bg_genes <- cleaned_counts %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  pull(Ensembl)
+
+human_trt <- toptable_results$IFNyvVEH_H %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  mutate(species = "Human")
+
+chimp_trt <- toptable_results$IFNyvVEH_C %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  mutate(species = "Chimp")
+
+species_trt <- bind_rows(human_trt, chimp_trt)
+
+human_degs <- human_trt %>% 
+  dplyr::filter(adj.P.Val < 0.05) %>% 
+  pull(Ensembl)
+
+chimp_degs <- chimp_trt %>% 
+  dplyr::filter(adj.P.Val < 0.05) %>% 
+  pull(Ensembl)
+
+gost_human <- gost(
+  query = human_degs,
+  organism = "hsapiens",
+  significant = TRUE,
+  custom_bg = bg_genes,
+  correction_method = "fdr",
+  sources = "GO:BP"
+)
+
+gost_chimp <- gost(
+  query = chimp_degs,
+  organism = "hsapiens",
+  significant = TRUE,
+  custom_bg = bg_genes,
+  correction_method = "fdr",
+  sources = "GO:BP"
+)
+
+human_GO <- gost_human$result
+
+gost_human$result
+gost_chimp$result
+# length(gost_human$result$query)
+# length(gost_chimp$result$query)
+
+# gostplot(gost_human)
+
+human_GO %>%
+  slice_min(p_value, n = 20) %>%
+  dplyr::mutate(
+    term_name = factor(term_name,
+                       levels = term_name)
+  ) %>%
+  ggplot(aes(x = -log10(p_value),
+             y = rev(term_name),
+             size = intersection_size,
+             color = p_value)) +
+  geom_point() +
+  theme_classic() +
+  labs(
+    x = "-log10(adjusted p-value)",
+    y = NULL,
+    size = "GeneCount"
+  )
+#length(unique(human_GO$term_id))
+```
+
+
+### gProfiler2 KEGG Attempt for Human IFNy vs VEH
+```{r KEGG Human analyses, eval=FALSE, include=FALSE}
+chimp_sig <- chimp_deg %>%
+  dplyr::filter(adj.P.Val < 0.05) %>%
+  dplyr::pull(Ensembl)
+
+kegg_results_chimp <- gost(
+    query = chimp_sig,
+    organism = "ptroglodytes",
+    sources = "KEGG"
+)
+
+human_sig <- human_deg %>%
+  dplyr::filter(adj.P.Val < 0.05) %>%
+  dplyr::pull(Ensembl)
+
+kegg_results_human <- gost(
+    query = human_sig,
+    organism = "hsapiens",
+    sources = "KEGG"
+)
+
+kegg_results_human$result
+# kegg_results_chimp$result
+
+kegg_human_df <- kegg_results_human$result %>%
+    dplyr::arrange(desc(-log10(p_value))) %>%
+    dplyr::mutate(adj.log.pval = -log10(p_value))
+
+
+top_kegg_human <- kegg_human_df %>%
+    slice_head(n = 20)
+
+# Code to show KEGG results on bar chart
+# ggplot(top_kegg_human,
+#        aes(x = reorder(term_name, adj.log.pval),
+#            y = adj.log.pval)) +
+#     geom_col(fill = "steelblue") +
+#     coord_flip() +
+#     labs(
+#         x = NULL,
+#         y = "-log10(adjusted p-value)",
+#         title = "KEGG Pathway Enrichment for Human: IFNy v VEH"
+#     ) +
+#     theme_classic()
+
+# Code to show KEGG results on dot plot
+ggplot(top_kegg_human,
+       aes(x = adj.log.pval,
+           y = reorder(term_name, adj.log.pval),
+           size = intersection_size,
+           color = p_value)) +
+    geom_point() +
+    labs(
+        x = "-log10(adjusted p-value)",
+        y = NULL,
+        size = "GeneCount",
+        title = "KEGG Pathway Enrichment for Human: IFNy v VEH"
+    ) +
+    theme_classic()
+```
+
+### clusterProfiler:enrichGO GO:BP Attempt
+```{r enrichGO BP Human analyses, include=FALSE}
+human_degs_entrez <- bitr(human_degs,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID", 
+    OrgDb = org.Hs.eg.db)
+
+bg_genes_entrez <- bitr(bg_genes,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db) 
+
+ego_human <- enrichGO(
+  gene = human_degs_entrez$ENTREZID,
+  universe = bg_genes_entrez$ENTREZID,
+  OrgDb = org.Hs.eg.db,
+  keyType = "ENTREZID", 
+  ont = "BP", 
+  pAdjustMethod = "BH", 
+  readable = TRUE )
+
+#summary(ego_human)
+
+# # Default dot plot from enrichGO
+# dotplot(
+#   ego_human,
+#   showCategory = 20,
+#   font.size = 10)
+
+# # ggplot barplot code for enrichGO
+# ego_human@result %>%
+#   arrange(p.adjust) %>%
+#   slice_head(n = 20) %>%
+#   mutate(
+#     Description = factor(
+#       Description,
+#       levels = rev(Description)
+#     )
+#   ) %>%
+#   ggplot(aes(
+#     x = -log10(p.adjust),
+#     y = Description
+#   )) +
+#   geom_col(fill = "steelblue") +
+#   theme_classic() +
+#   labs(
+#     x = expression(-log[10]("Adjusted p-value")),
+#     y = NULL,
+#     title = "Human GO Biological Processes"
+#   )
+
+ego_human@result %>%
+  dplyr::arrange(p.adjust) %>%
+  slice_head(n = 20) %>%
+  dplyr::mutate(
+    Description = factor(
+      Description,
+      levels = rev(Description)
+    )
+  ) %>%
+  ggplot(aes(
+    x = -log10(p.adjust),
+    y = Description,
+    size = Count,
+    color = p.adjust
+  )) +
+  geom_point() +
+  scale_color_gradient(low = "red", high = "blue") +
+  theme_classic() +
+  labs(
+    x = expression(-log[10]("adjusted p-value")),
+    y = NULL
+  )
+
+```
+
+### Venn Diagram depicting unique and shared Human: IFNy v VEH GO_BP_terms from gprofiler and enrichGO
+```{r Venn Diagram reporting number of unique and shared Human IFNy v VEH GO_BP_terms identified from enrichGO and gProfiler2}
+
+enrichGO_terms <- ego_human@result %>%
+  dplyr::filter(p.adjust < 0.05) %>%
+  dplyr::pull(ID)
+
+gprofiler2_terms <- gost_human$result %>%
+  dplyr::filter(p_value < 0.05) %>%
+  dplyr::pull(term_id)
+
+ggVennDiagram(
+  list(
+    clusterProfiler = enrichGO_terms,
+    gProfiler2 = gprofiler2_terms
+  )
+) +
+scale_fill_gradient(low = "light blue", high = "dark blue") +
+theme_void() +
+#ggtitle("Number of unique GO:BP terms identified from GO codes") +
+theme(
+#  legend.position = "none" #This is to exclude the color legend
+) +
+  xlim(-5, 5) +
+  coord_flip()
+
+```
+
+### enrichGO GO term functions
+
+```{r enrichGO set-up code}
+toptable_list <- readRDS("data/IFNy_data/IFNy_RNASeq/toptable_results.RDS")
+comparison_name_list <- list("VEH: Human vs Chimp", "IFNy: Human vs Chimp", "Human: IFNy vs VEH", "Chimp: IFNy vs VEH", "Interaction")
+enrichGO_setup <- function(toptable, comparison_name) {
+
+  enrichGO_bg <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    dplyr::pull(Ensembl)
+
+  enrichGO_sig <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    dplyr::filter(adj.P.Val < 0.05) %>%
+    dplyr::pull(Ensembl)
+
+  if (length(enrichGO_sig) == 0) {
+    message("No significant genes for ", comparison_name)
+    return(NULL)
+  }
+
+  enrichGO_sig_entrez <- bitr(
+    enrichGO_sig,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  enrichGO_bg_entrez <- bitr(
+    enrichGO_bg,
+    fromType = "ENSEMBL",
+    toType = "ENTREZID",
+    OrgDb = org.Hs.eg.db
+  )
+
+  list(
+      comparison = comparison_name,
+      enrichGO_sig_entrez = enrichGO_sig_entrez,
+      enrichGO_bg_entrez = enrichGO_bg_entrez
+  )
+}
+
+enrichGO_results <- vector("list", length(toptable_list))
+
+for (i in seq_along(toptable_list)) {
+  enrichGO_results[[i]] <- enrichGO_setup(
+    toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+}
+
+```
+
+```{r Function for clusterProfiler Human analyses, fig.height=6, fig.width=7, eval=FALSE, include=FALSE}
+# toptable_list <- readRDS("data/toptable_results.RDS")
+# comparison_name_list <- list("VEH: Human vs Chimp", "IFNy: Human vs Chimp", "Human: IFNy vs VEH", "Chimp: IFNy vs VEH", "Interaction")
+ontology_list <- list("BP", "MF", "CC")
+
+# bg <- toptable %>%
+#     tibble::rownames_to_column("Ensembl") %>%
+#     pull(Ensembl)
+# 
+#   sig <- toptable %>%
+#     tibble::rownames_to_column("Ensembl") %>%
+#     filter(adj.P.Val < 0.05) %>%
+#     pull(Ensembl)
+# 
+#   if (length(sig) == 0) {
+#     message("No significant genes for ", comparison_name)
+#     return(NULL)
+#   }
+# 
+#   sig_entrez <- bitr(
+#     sig,
+#     fromType = "ENSEMBL",
+#     toType = "ENTREZID",
+#     OrgDb = org.Hs.eg.db
+#   )
+# 
+#   bg_entrez <- bitr(
+#     bg,
+#     fromType = "ENSEMBL",
+#     toType = "ENTREZID",
+#     OrgDb = org.Hs.eg.db
+#   )
+generate_GO_plots <- function(enrichGO_data, ontology){
+
+  ego <- enrichGO(
+    gene = enrichGO_data$enrichGO_sig_entrez$ENTREZID,
+    universe = enrichGO_data$enrichGO_bg_entrez$ENTREZID,
+    OrgDb = org.Hs.eg.db,
+    keyType = "ENTREZID",
+    ont = ontology,
+    pAdjustMethod = "BH",
+    readable = TRUE
+  )
+
+  if(is.null(ego) || nrow(as.data.frame(ego)) == 0){
+    message("No enriched ", ontology,
+            " terms for ", enrichGO_data$comparison)
+    return(NULL)
+  }
+
+  p <- barplot(
+    ego,
+    showCategory = 20,
+    font.size = 10,
+    title = paste0(enrichGO_data$comparison, " (GO:", ontology, ")")
+  )
+
+  return(p)
+}
+
+for(i in seq_along(toptable_list)){
+
+  enrichGO_data <- enrichGO_setup(
+    toptable_list[[i]],
+    comparison_name_list[[i]]
+  )
+
+  if(is.null(enrichGO_data))
+    next
+
+  for(ontology in ontology_list){
+
+    p <- generate_GO_plots(enrichGO_data,
+                           ontology)
+
+    if(!is.null(p))
+      print(p)
+  }
+}
+
+# human_bg <- V.Human_IFNy_vs_VEH %>%
+#   tibble::rownames_to_column("Ensembl") %>%
+#   pull(Ensembl)
+# 
+# human_sig <- human_deg %>%
+#   filter(adj.P.Val < 0.05) %>%
+#   pull(Ensembl)
+# 
+# human_sig_entrez <- bitr(human_sig,
+#                         fromType = "ENSEMBL",
+#                         toType = "ENTREZID",
+#                         OrgDb = org.Hs.eg.db)
+# 
+# human_bg_entrez <- bitr(human_bg,
+#                        fromType = "ENSEMBL",
+#                        toType = "ENTREZID",
+#                        OrgDb = org.Hs.eg.db)
+# ego_human <- enrichGO(
+#   gene = human_sig_entrez$ENTREZID,
+#   universe = human_bg_entrez$ENTREZID,
+#   OrgDb = org.Hs.eg.db,
+#   keyType = "ENTREZID",
+#   ont = "BP",
+#   pAdjustMethod = "BH",
+#   readable = TRUE
+# )
+# dotplot(ego_human)
+
+```
+
+### gProfiler2 GO/KEGG term functions
+
+```{r GO analyses setup code, fig.width=5, fig.height=5}
+## Setup function
+comparison_name_list <- list("VEH: Human vs Chimp", "IFNy: Human vs Chimp", "Human: IFNy vs VEH", "Chimp: IFNy vs VEH", "Interaction")
+
+gprofiler2_setup <- function(toptable, comparison_name){
+
+  gprofiler2_degs <- toptable %>%
+    tibble::rownames_to_column("Ensembl") %>%
+    dplyr::filter(adj.P.Val < 0.05) %>%
+    dplyr::pull(Ensembl)
+  
+  bg_genes <- cleaned_counts %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  dplyr::pull(Ensembl)
+
+  if(length(gprofiler2_degs) == 0){
+
+    message("No significant genes for ", comparison_name)
+
+    return(NULL)
+
+  }
+
+  list(
+    comparison = comparison_name,
+    gprofiler2_degs = gprofiler2_degs,
+    bg_genes = bg_genes
+  )
+}
+
+## Creating my input list
+gprofiler2_results <- lapply(
+  seq_along(toptable_list),
+  function(i)
+    gprofiler2_setup(
+      toptable_list[[i]],
+      comparison_name_list[[i]]
+    )
+)
+
+```
+
+```{r Generating figures illustrating GO/KEGG terms, fig.width=7, fig.height=6}
+## Generating a list of databases to query
+source_list <- c(
+  "GO:BP",
+  "GO:MF",
+  "GO:CC",
+  "KEGG"
+)
+
+## Creating the enrichment function
+generate_enrichment_results <- function(gprofiler2_data,
+                                        source){
+  gost_res <- gost(
+    query = gprofiler2_data$gprofiler2_degs,
+    custom_bg = gprofiler2_data$bg_genes,
+    organism = "hsapiens",
+    sources = source,
+    significant = TRUE,
+    correction_method = "fdr"
+  )
+
+  if(is.null(gost_res$result) ||
+     nrow(gost_res$result) == 0){
+    message(
+      "No enriched ",
+      source,
+      " terms for ",
+      gprofiler2_data$comparison
+    )
+    return(NULL)
+  }
+
+  gost_res$result %>%
+    dplyr::mutate(
+      comparison = gprofiler2_data$comparison,
+      source = source
+    )
+}
+
+## Running the enrichment function
+gprofiler2_results_df <- tibble()
+
+for(data in gprofiler2_results){
+  if(is.null(data))
+    next
+
+  for(source in source_list){
+    result <- generate_enrichment_results(
+      data,
+      source
+    )
+    if(!is.null(result))
+      gprofiler2_results_df <-
+        bind_rows(
+          gprofiler2_results_df,
+          result
+        )
+  }
+}
+
+## Now to plot GO and KEGG Terms separately
+for(comp in unique(gprofiler2_results_df$comparison)){
+  for(src in unique(gprofiler2_results_df$source)){
+    
+    plot_df <- gprofiler2_results_df %>%
+      filter(
+        comparison == comp,
+        source == src
+      ) %>%
+      slice_min(
+        order_by = p_value,
+        n = 20,
+        with_ties = FALSE
+      )
+    if(nrow(plot_df) == 0)
+      next
+
+### Code for dot plot    
+    # plot_df <- plot_df %>%
+    #   arrange(p_value) %>%
+    #   mutate(
+    #     term_label = stringr::str_wrap(term_name, width = 40),
+    #     term_label = factor(term_label, levels = rev(term_label))
+    #     )  
+    
+    p <- ggplot(
+        plot_df,
+        aes(
+          x = -log10(p_value),
+          y = reorder(term_name, -log10(p_value)),
+          size = intersection_size)) +
+        geom_point(
+          color = ifelse(src == "KEGG",
+                         "#2E8B57",
+                         "#5B4FA2")
+        ) +
+        
+        labs(
+          title = paste(comp, "-", src),
+          x = "-log10(adjusted p-value)",
+          y = NULL,
+          size = "GeneCount"
+            ) +
+        theme_classic() 
+      print(p)
+  }
+}
+
+### Code for bar graph    
+#     p <- ggplot(
+#       plot_df,
+#       aes(
+#         x = reorder(term_name, -log10(p_value)),
+#         y = -log10(p_value)
+#       )) +
+#       geom_col(
+#         fill = ifelse(src == "KEGG",
+#                       "#2E8B57",
+#                       "#5B4FA2")
+#       ) +
+#       coord_flip() +
+#       labs(
+#         title = paste(comp, "-", src),
+#         x = NULL,
+#         y = "-log10(Adjusted p-value)"
+#       ) +
+#       theme_classic()
+#     print(p)
+#   }
+# }
+
+# # The code below is to facet plot all ontology and toptable entities onto one page, not ideal for looking at
+# gprofiler2_GO_results_df %>%
+#   group_by(comparison, ontology) %>%
+#   slice_min(order_by = p_value,
+#             n = 20,
+#             with_ties = FALSE) %>%
+#   ggplot(
+#     aes(
+#       x = reorder(term_name, -log10(p_value)),
+#       y = -log10(p_value)
+#     )
+#   ) +
+#   geom_col(fill = "#5B4FA2") +
+#   coord_flip() +
+#   facet_grid(
+#     ontology ~ comparison,
+#     scales = "free_y"
+#   ) +
+#   labs(
+#     x = NULL,
+#     y = "-log10(Adj.P-Val)",
+#     title = "GO enrichment"
+#   ) +
+#   theme_bw()
+```
+
+### Heatmap comparing -log10(p-value) correlations of top GO_BP between species
+```{r Species Comparison Heatmap, fig.width=8, fig.height=5}
+
+gost_human_hmp <- gost(
+  query = human_degs,
+  organism = "hsapiens",
+  significant = FALSE,
+  custom_bg = bg_genes,
+  domain_scope = "custom",
+  correction_method = "fdr",
+  sources = "GO:BP"
+)
+
+gost_chimp_hmp <- gost(
+  query = chimp_degs,
+  organism = "hsapiens",
+  significant = FALSE,
+  custom_bg = bg_genes,
+  domain_scope = "custom",
+  correction_method = "fdr",
+  sources = "GO:BP"
+)
+
+# nrow(gost_human_hmp$result)
+# summary(gost_human_hmp$result$p_value)
+
+human_go_hmp <- gost_human_hmp$result %>%
+  dplyr::arrange(p_value) %>%
+  slice_head(n = 300)
+
+chimp_go_hmp <- gost_chimp_hmp$result %>%
+  dplyr::arrange(p_value) %>%
+  slice_head(n = 300)
+
+top_term_set <- union(
+    human_go_hmp$term_name,
+    chimp_go_hmp$term_name
+)
+
+human_plot_hmp <- human_go_hmp %>%
+    dplyr::mutate(
+        Human =
+            ifelse(
+                p_value < 0.05,
+                -log10(p_value),   # significant
+                -1                 # present but not significant
+            )
+    ) %>%
+    select(term_name, Human)
+
+chimp_plot_hmp <- chimp_go_hmp %>%
+    dplyr::mutate(
+        Chimp =
+            ifelse(
+                p_value < 0.05,
+                -log10(p_value),
+                -1
+            )
+    ) %>%
+    select(term_name, Chimp)
+
+heatmap_df <- full_join(
+    chimp_plot_hmp,
+    human_plot_hmp,
+    by = "term_name"
+)
+
+# heatmap_df_2 <- heatmap_df %>%
+#     mutate(
+#         Human = replace_na(Human, 0),
+#         Chimp = replace_na(Chimp, 0)
+#     )
+
+hmp_matrix <- heatmap_df %>%
+  dplyr::select(
+    term_name,
+    Chimp,
+    Human
+  ) %>% 
+  column_to_rownames("term_name") %>%
+  # slice_head(n=50) %>% 
+  as.matrix()
+
+#hmp_matrix
+
+heatmap_colors <- colorRamp2(
+    c(-1, 0, 1.30103, 25),
+    c("blue", "blue", "white", "red")
+)
+Heatmap(
+  hmp_matrix,
+  name = "-log10(adj.P)",
+  cluster_rows = FALSE,
+  cluster_columns = FALSE,
+  # show_row_names = FALSE,
+  row_names_side = "right",
+  row_names_gp = gpar(fontsize = 8),
+  row_names_max_width = unit(12, "cm"),
+  na_col = "darkgray",
+  col = heatmap_colors
+  )
+#length(hmp_matrix)
+```
+
+
+### Heatmap comparing -log10(p-value) correlations of GO_BP between species, then pulling top terms
+```{r Top Term Comparison Heatmap, fig.width=8, fig.height=5}
+
+gost_human_hmp <- gost(
+  query = human_degs,
+  organism = "hsapiens",
+  significant = FALSE,
+  custom_bg = bg_genes,
+  domain_scope = "custom",
+  correction_method = "fdr",
+  sources = "GO:BP"
+)
+
+gost_chimp_hmp <- gost(
+  query = chimp_degs,
+  organism = "hsapiens",
+  significant = FALSE,
+  custom_bg = bg_genes,
+  domain_scope = "custom",
+  correction_method = "fdr",
+  sources = "GO:BP"
+)
+
+human_go_hmp <- gost_human_hmp$result %>%
+  dplyr::arrange(p_value)
+
+chimp_go_hmp <- gost_chimp_hmp$result %>%
+  dplyr::arrange(p_value)
+
+top_term_set <- union(
+    human_go_hmp$term_name,
+    chimp_go_hmp$term_name
+)
+
+human_plot_hmp <- human_go_hmp %>%
+    dplyr::mutate(
+        Human =
+            ifelse(
+                p_value < 0.05,
+                -log10(p_value),   # significant
+                -1                 # present but not significant
+            )
+    ) %>%
+    select(term_name, Human)
+
+chimp_plot_hmp <- chimp_go_hmp %>%
+    dplyr::mutate(
+        Chimp =
+            ifelse(
+                p_value < 0.05,
+                -log10(p_value),
+                -1
+            )
+    ) %>%
+    select(term_name, Chimp)
+
+heatmap_df <- full_join(
+    human_plot_hmp,
+    chimp_plot_hmp,
+    by = "term_name"
+)
+
+# heatmap_df_2 <- heatmap_df %>%
+#     mutate(
+#         Human = replace_na(Human, 0),
+#         Chimp = replace_na(Chimp, 0)
+#     )
+
+hmp_matrix <- heatmap_df %>%
+  dplyr::select(
+    term_name,
+    Human,
+    Chimp
+  ) %>% 
+  column_to_rownames("term_name") %>%
+  slice_head(n = 100) %>% 
+  as.matrix()
+
+#heatmap_matrix
+
+heatmap_colors <- colorRamp2(
+    c(-1, 0, 1.30103, 25),
+    c("blue", "blue", "white", "red")
+)
+Heatmap(
+  hmp_matrix,
+  name = "-log10(adj.P)",
+  cluster_rows = FALSE,
+  cluster_columns = FALSE,
+  row_names_side = "right",
+  row_names_gp = gpar(fontsize = 8),
+  row_names_max_width = unit(12, "cm"),
+  na_col = "darkgray",
+  col = heatmap_colors
+  )
+
+# table(gost_human_hmp$result$significant)
+# table(gost_chimp_hmp$result$significant)
+```
+
+### Previous single-pass code for enrichGO
+```{r GO CC analyses, fig.height=5, fig.width=5, eval=FALSE, include=FALSE}
+# generate_GO_plots <- function(toptable, comparison_name){
+# 
+#   bg <- toptable %>%
+#     tibble::rownames_to_column("Ensembl") %>%
+#     pull(Ensembl)
+# 
+#   sig <- toptable %>%
+#     tibble::rownames_to_column("Ensembl") %>%
+#     filter(adj.P.Val < 0.05) %>%
+#     pull(Ensembl)
+# 
+#   if(length(sig) == 0){
+#     message("No significant genes for ", comparison_name)
+#     return(NULL)
+#   }
+# 
+#   sig_entrez <- bitr(
+#     sig,
+#     fromType = "ENSEMBL",
+#     toType = "ENTREZID",
+#     OrgDb = org.Hs.eg.db
+#   )
+# 
+#   bg_entrez <- bitr(
+#     bg,
+#     fromType = "ENSEMBL",
+#     toType = "ENTREZID",
+#     OrgDb = org.Hs.eg.db
+#   )
+# 
+#   ego <- enrichGO(
+#     gene = sig_entrez$ENTREZID,
+#     universe = bg_entrez$ENTREZID,
+#     OrgDb = org.Hs.eg.db,
+#     keyType = "ENTREZID",
+#     ont = "CC", # or other ont classifications such as "BP" or "MF"
+#     pAdjustMethod = "BH",
+#     readable = TRUE
+#   )
+# 
+#   if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
+#   message("No enriched GO terms for ", comparison_name)
+#   return(NULL)
+# }
+#   
+#   p <- barplot(
+#     ego,
+#     showCategory = 20,
+#     font.size = 10,
+#     title = paste0("GO_CC ", comparison_name) # replcae CC with BP or MF as needed
+#   )
+# 
+#   return(p)
+# }
+# 
+# for(i in seq_along(save_toptable_list)){
+# 
+#   p <- generate_GO_plots(
+#     save_toptable_list[[i]],
+#     comparison_name_list[[i]]
+#   )
+# 
+#   if(!is.null(p))
+#     print(p)
+# }
+
+
+```
+
