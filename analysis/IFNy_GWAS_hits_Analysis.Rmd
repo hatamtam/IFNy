@@ -1,0 +1,515 @@
+---
+title: "IFNy_GWAS_hits_Analysis"
+author: "Harsha Tamtam"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r setup, include=FALSE}
+#this chuck is to setup defaults for basic settings of the webpage, note that this chunk is R language and the chunk below is CSS language
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	dev = c("png","pdf")
+)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 200px;
+}
+```
+
+## Library Section
+```{r Libraries}
+library(tidyverse)
+library(dplyr)
+library(tibble)
+library(scales)
+library(cowplot)
+library(edgeR)
+library(smplot2)
+library(ggpubr)
+library(workflowr)
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(gridExtra)
+library(ggrepel)
+library(ggVennDiagram)
+library(grid)
+library(ggrepel)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(clusterProfiler)
+library(circlize)
+library(gprofiler2)
+library(stringr)
+library(readr)
+library(GO.db)
+library(AnnotationDbi)
+```
+
+
+## GWAS associated CVD trait lookups
+```{r}
+gwas_cvd <- read_tsv("data/gwas_cvd.tsv")
+gwas_heart_disorders <- read_tsv("data/gwas_heart_disoders.tsv")
+toptable_results <- readRDS("data/IFNy_data/IFNy_RNASeq/toptable_results.RDS")
+lookup_table <- readRDS("data/IFNy_data/IFNy_RNASeq/Ensembl_Entrez_Symbol_table.RDS")
+
+interaction_sig_gene_list <- toptable_results$Interaction %>%
+  tibble::rownames_to_column("Ensembl") %>%
+  filter(adj.P.Val < 0.05) %>% 
+  left_join(
+    lookup_table %>%
+      tibble::rownames_to_column("Ensembl") %>% 
+      dplyr::select(Ensembl, Symbol),
+    by = "Ensembl"
+  ) %>% 
+  mutate(id_label = ifelse(
+    is.na(Symbol),
+    Ensembl,
+    Symbol))
+
+length(unique(gwas_cvd$efoTraits))
+
+afib_GWAS_trait_genes <- gwas_cvd %>%
+    filter(str_detect(
+        tolower(efoTraits),
+        "atrial fibrillation"
+    ))
+## Use this code if I want to look at efoTraits with ONLY "atrial fibrillation" as a trait, not in combination with others
+# afib_GWAS_trait_genes <- gwas_cvd %>%
+#     filter(efoTraits == "atrial fibrillation")
+
+afib_genes <- afib_GWAS_trait_genes %>%
+    separate_rows(mappedGenes, sep = ",") %>%
+    mutate(mappedGenes = trimws(mappedGenes)) %>%
+    distinct(mappedGenes)
+
+interaction_symbols <- interaction_sig_gene_list %>% 
+  pull(Symbol)
+
+# readRDS("data/IFNy_data/IFNy_RNASeq/toptable_results.RDS")
+# readRDS("data/IFNy_data/IFNy_RNASeq/Ensembl_Entrez_Symbol_table.RDS")
+
+background_symbols <- toptable_results$Interaction %>%
+    rownames_to_column("Ensembl") %>%
+    left_join(
+        lookup_table %>%
+          rownames_to_column("Ensembl") %>%
+            select(Ensembl, Symbol),
+        by = "Ensembl"
+    ) %>%
+    pull(Symbol) %>%
+    na.omit() %>%
+    unique()
+
+## Now counting OVERLAPS
+## Code below is outputting Interaction genes overlapping A-fib genes
+interaction_afib <-
+    sum(interaction_symbols %in% afib_genes$mappedGenes)
+
+## Code below is outputting Interaction genes NOT overlapping A-fib genes
+interaction_not <-
+    length(interaction_symbols) - interaction_afib
+
+## Code below is outputting Background genes excluding Interaction genes
+remaining_symbols <-
+    setdiff(background_symbols, interaction_symbols)
+
+## Code below is outputting from the remaining genes those that are A-fib genes
+remaining_afib <-
+    sum(remaining_symbols %in% afib_genes$mappedGenes)
+
+## Code below is outputting from the the remaining those that are not A-fib genes
+remaining_not <-
+    length(remaining_symbols) - remaining_afib
+
+## Now I can creating a table that shows the numerical counts of my sorting steps from above
+contingency_table <- matrix(
+    c(
+        interaction_afib,
+        interaction_not,
+        remaining_afib,
+        remaining_not
+    ),
+    nrow = 2,
+    byrow = TRUE
+)
+
+rownames(contingency_table) <-
+    c("Interaction","Remaining")
+
+colnames(contingency_table) <-
+    c("AFib","Not_AFib")
+
+print(contingency_table)
+
+## Statistical tests for categorical variables
+# chisq.test(contingency_table)
+fisher.test(contingency_table)
+# head(fisher.test(contingency_table))
+
+## Statistical test from Fisher Exact observing Odd's Ratio (OR)
+fisher.test(contingency_table)$estimate
+```
+## GWAS Function
+```{r}
+
+run_trait_fisher <- function(trait_name,
+                             gwas_table,
+                             interaction_symbols,
+                             background_symbols){
+
+    ## GWAS hits for one trait
+    trait_genes <-
+        gwas_table %>%
+        filter(`DISEASE/TRAIT` == trait_name) %>%
+        tidyr::separate_rows(
+            MAPPED_GENE,
+            sep = ",\\s*"
+        ) %>%
+        distinct(MAPPED_GENE) %>%
+        pull(MAPPED_GENE)
+
+    ## Restrict to genes tested by limma
+    trait_genes <-
+        intersect(
+            trait_genes,
+            background_symbols
+        )
+
+    ## Counts
+    interaction_hit <-
+        sum(interaction_symbols %in% trait_genes)
+
+    interaction_nohit <-
+        length(interaction_symbols) -
+        interaction_hit
+
+    background_only <-
+        setdiff(
+            background_symbols,
+            interaction_symbols
+        )
+
+    background_hit <-
+        sum(background_only %in% trait_genes)
+
+    background_nohit <-
+        length(background_only) -
+        background_hit
+    
+    Overlap_Genes <-
+    paste(
+        sort(intersect(interaction_symbols, trait_genes)),
+        collapse = "; "
+    )
+
+    contingency <-
+        matrix(
+            c(interaction_hit,
+              interaction_nohit,
+              background_hit,
+              background_nohit),
+            byrow = TRUE,
+            nrow = 2
+        )
+
+    fisher_res <-
+        fisher.test(contingency)
+
+    tibble(
+    Trait = trait_name,
+    Overlap_Genes = Overlap_Genes,
+    GWAS_Genes = length(trait_genes),
+    Interaction_GWAS = interaction_hit,
+    Interaction_NotGWAS = interaction_nohit,
+    Background_GWAS = background_hit,
+    Background_NotGWAS = background_nohit,
+    Odds_Ratio = unname(fisher_res$estimate),
+    CI_Lower = fisher_res$conf.int[1],
+    CI_Upper = fisher_res$conf.int[2],
+    P_Value = fisher_res$p.value
+    )
+}
+
+all_traits <- unique(gwas_heart_disorders$`DISEASE/TRAIT`)
+
+fisher_results <-
+    purrr::map_dfr(
+        all_traits,
+        run_trait_fisher,
+        gwas_table = gwas_heart_disorders,
+        interaction_symbols = interaction_symbols,
+        background_symbols = background_symbols
+    )
+
+# ## Is multiple correction testing necessary if everything is nullified (i.e: FDR = 1 for all samples?)
+# fisher_results <-
+#     fisher_results %>%
+#     mutate(
+#         FDR = p.adjust(
+#             P_Value,
+#             method = "BH"
+#         )
+#     ) %>%
+#     arrange(FDR)
+# 
+# fisher_results %>%
+#     filter(FDR < 0.05)
+# 
+# # fisher_results
+
+```
+
+## Updated GWAS_CVD table
+```{r}
+
+updated_gwas_interaction_table <- fisher_results %>% 
+  dplyr::filter(fisher_results$GWAS_Genes >= 10)
+
+updated_gwas_interaction_table <- updated_gwas_interaction_table %>% 
+  dplyr::filter(updated_gwas_interaction_table$Interaction_GWAS >= 2)
+
+
+updated_gwas_interaction_table <-
+    updated_gwas_interaction_table %>%
+    dplyr::mutate(
+        FDR = p.adjust(
+            P_Value,
+            method = "BH"
+        )
+    ) %>%
+    dplyr::arrange(FDR)
+
+# updated_gwas_interaction_table %>%
+#   dplyr::filter(FDR < 0.05)
+
+updated_gwas_interaction_table
+
+```
+
+
+```{r}
+
+fisher_results_sig <- fisher_results %>%
+  filter(P_Value < 0.05) %>%
+  mutate(
+    Odds_Ratio_plot = ifelse(
+      is.infinite(Odds_Ratio),
+      4096,
+      Odds_Ratio
+    ),
+    CI_Upper_plot = ifelse(
+      is.infinite(CI_Upper),
+      4096,
+      CI_Upper
+    ),
+    log2_OR = log2(Odds_Ratio_plot),
+    log2_CI_lower = log2(CI_Lower),
+    log2_CI_upper = log2(CI_Upper_plot), 
+  Trait = recode(
+      Trait,
+      "trait in response to triamcinolone acetonide,ocular hypertension" = "TAC-induced ocular HTN"
+  ),
+  Trait = factor(
+    Trait,
+    levels = c(
+      "portal hypertension",
+      "orthostatic hypotension",
+      "multifocal choroiditis",
+      "intracerebral hemorrhage",
+      "TAC-induced ocular HTN"
+    )
+  )
+)
+
+
+ggplot(
+  fisher_results_sig,
+  aes(
+    x = log2_OR,
+    y = reorder(Trait, log2_OR)
+  )
+) +
+  geom_errorbar(
+    aes(
+      xmin = log2_CI_lower,
+      xmax = log2_CI_upper
+    ),
+    height = 0.2
+  ) +
+  geom_point(
+    size = 3
+  ) +
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed"
+  ) +
+  theme_classic() +
+  labs(
+    x = "Log2(Odds Ratio) (95% CI)",
+    y = NULL,
+    title = "Significant trait enrichment"
+  )
+
+```
+
+```{r}
+selected_genes <- c(
+  "DAB1",
+  "SLC17A5",
+  "ANGPTL4",
+  "FRRS1",
+  "IL17RC",
+  "CFH",
+  "PIK3AP1",
+  "TRPC4AP"
+)
+
+heatmap_long <-
+    fisher_results %>%
+    filter(Overlap_Genes != "") %>%
+    separate_rows(
+        Overlap_Genes,
+        sep=";\\s*"
+    ) %>%
+    rename(
+        Gene = Overlap_Genes
+    ) %>%
+    distinct(Trait, Gene)
+
+sig_heatmap_long <- fisher_results %>%
+  filter(P_Value < 0.05) %>%
+  filter(Overlap_Genes != "") %>%
+  separate_rows(
+    Overlap_Genes,
+    sep = ";\\s*"
+  ) %>%
+  rename(Gene = Overlap_Genes) %>%
+  distinct(Trait, Gene)
+
+presence_matrix <-
+    heatmap_long %>%
+    mutate(Present = 1) %>%
+    pivot_wider(
+        id_cols = Gene,
+        names_from = Trait,
+        values_from = Present,
+        values_fill = 0
+    )
+
+presence_matrix_selected <- presence_matrix %>%
+  filter(Gene %in% selected_genes) %>%
+  mutate(
+    Gene = factor(Gene, levels = selected_genes)
+  ) %>%
+  arrange(Gene) %>%
+  select(
+    Gene,
+    where(~ any(.x == 1))
+  ) %>%
+  column_to_rownames("Gene") %>%
+  as.matrix()
+
+trait_order <-
+    fisher_results %>%
+    filter(Trait %in% colnames(presence_matrix_selected)) %>%
+    arrange(P_Value) %>%
+    distinct(Trait) %>%
+    pull(Trait)
+
+sig_matrix <- sig_heatmap_long %>%
+  mutate(Significant = "*") %>%
+  pivot_wider(
+    id_cols = Gene,
+    names_from = Trait,
+    values_from = Significant,
+    values_fill = ""
+  ) %>%
+  filter(Gene %in% rownames(presence_matrix_selected)) %>%
+  column_to_rownames("Gene") %>%
+  as.matrix()
+
+
+# Create full significance matrix matching presence matrix dimensions
+sig_matrix_full <- matrix(
+  "",
+  nrow = nrow(presence_matrix_selected),
+  ncol = ncol(presence_matrix_selected),
+  dimnames = list(
+    rownames(presence_matrix_selected),
+    colnames(presence_matrix_selected)
+  )
+)
+
+# Fill in significant gene-trait combinations
+common_genes <- intersect(
+  rownames(sig_matrix),
+  rownames(sig_matrix_full)
+)
+
+common_traits <- intersect(
+  colnames(sig_matrix),
+  colnames(sig_matrix_full)
+)
+
+sig_matrix_full[common_genes, common_traits] <-
+  sig_matrix[common_genes, common_traits]
+
+sig_matrix <- sig_matrix_full
+
+trait_labels <- colnames(presence_matrix_selected)
+
+trait_labels[trait_labels == "trait in response to triamcinolone acetonide,ocular hypertension"] <- "TAC-induced ocular HTN"
+trait_labels[trait_labels == "angioedema,response to angiotensin-converting enzyme inhibitor"] <- "ACEI-induced angioedema"
+trait_labels[trait_labels == "orthostatic hypotension"] <- "orthostatic HoTN"
+trait_labels[trait_labels == "portal hypertension"] <- "portal HTN"
+trait_labels[trait_labels == "coronary artery disorder"] <- "CAD"
+trait_labels[trait_labels == "type 2 diabetes mellitus,coronary artery disorder"] <- "type 2 diabetes"
+
+Heatmap(
+  presence_matrix_selected,
+  name = "Present",
+  col = c(
+    "0" = "lavender",
+    "1" = "maroon"
+  ),
+  rect_gp = grid::gpar(col="grey80"),
+
+  cluster_rows = FALSE,
+  cluster_columns = FALSE,
+  row_names_side = "left",
+  show_row_names = TRUE,
+  show_column_names = TRUE,
+  column_names_rot = 45,
+  row_names_gp = grid::gpar(fontsize=9),
+  column_labels = trait_labels,
+  column_names_gp = grid::gpar(fontsize=8),
+  column_names_side = "top",
+    cell_fun = function(j, i, x, y, width, height, fill) {
+
+    if(sig_matrix[i, j] == "*") {
+      grid::grid.text(
+        "*",
+        x,
+        y,
+        gp = grid::gpar(fontsize = 14)
+      )
+    }
+
+  },
+  heatmap_legend_param = list(
+    at = c(0,1),
+    labels = c("Absent","Present")
+  )
+)
+
+```
